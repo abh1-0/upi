@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Studio — Developer Workbench & QR Generator</title>
+  <meta name="description" content="Generate NPCI-compliant UPI QR codes, customizable merchant standees, mobile intent triggers, and copy-paste 'Pay with UPI' HTML embed buttons.">
+  <meta name="theme-color" content="#070A12">
+  <link rel="icon" type="image/svg+xml" href="assets/upi-studio-logo.svg">
+  <link rel="apple-touch-icon" href="assets/upi-studio-logo.svg">
+  
+  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- QRCode.js Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Specular Ambient Atmosphere -->
+  <div class="ambient-glow glow-primary" aria-hidden="true"></div>
+  <div class="ambient-glow glow-secondary" aria-hidden="true"></div>
+
+  <!-- Liquid Glass Header Navigation -->
+  <header class="glass-navbar">
+    <div class="nav-shell">
+      <div class="brand-lockup">
+        <div class="brand-badge-shell">
+          <img src="assets/upi-studio-logo.svg" alt="UPI Studio Logo" class="brand-logo-img" width="34" height="34">
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <span class="brand-title">UPI Studio</span>
+            <span class="spec-pill">NPCI v2.0</span>
+          </div>
+          <span class="brand-subline">Payment Link &amp; QR Workbench</span>
+        </div>
+      </div>
+
+      <nav class="nav-segment-control" role="tablist">
+        <button class="segment-tab active" data-tab="tab-qr" role="tab" aria-selected="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+          <span>Standee &amp; QR</span>
+        </button>
+        <button class="segment-tab" data-tab="tab-intent" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          <span>Deep Links</span>
+        </button>
+        <button class="segment-tab" data-tab="tab-button" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+          <span>HTML Embed</span>
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="themeToggle" class="icon-control-btn" title="Toggle Theme (Light / Dark)">
+          <svg class="sun-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="moon-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workbench-viewport">
+    <!-- Workbench Grid -->
+    <div class="workbench-layout">
+      <!-- Left Config Cockpit -->
+      <section class="workbench-card config-panel" aria-labelledby="cfg-title">
+        <div class="panel-headline">
+          <div class="headline-pill">
+            <span class="pulse-dot"></span>
+            <span>Real-time NPCI Link Compiler</span>
+          </div>
+          <h2 id="cfg-title" class="headline-title">Payment Parameters</h2>
+          <p class="headline-desc">Configure recipient VPA, transaction amount, reference IDs, and QR styling.</p>
+        </div>
+
+        <form id="upiForm" onsubmit="event.preventDefault();" class="params-form">
+          <!-- UPI ID & Handle Split Input -->
+          <div class="field-item">
+            <div class="field-label-row">
+              <label for="upiUsername">Payee UPI ID (VPA) <span class="required-star">*</span></label>
+              <span class="spec-param-badge">pa</span>
+            </div>
+            <div class="vpa-split-input">
+              <input type="text" id="upiUsername" placeholder="merchantname" value="merchant" required spellcheck="false" autocomplete="off">
+              <span class="vpa-delimiter">@</span>
+              <input type="text" id="upiHandleCustom" list="handleList" placeholder="okaxis" value="okaxis" required spellcheck="false">
+              <datalist id="handleList">
+                <option value="okaxis">Google Pay (Axis)</option>
+                <option value="okhdfcbank">Google Pay (HDFC)</option>
+                <option value="okicici">Google Pay (ICICI)</option>
+                <option value="oksbi">Google Pay (SBI)</option>
+                <option value="ybl">PhonePe (YES Bank)</option>
+                <option value="ibl">PhonePe (IndusInd)</option>
+                <option value="axl">PhonePe (Axis)</option>
+                <option value="paytm">Paytm</option>
+                <option value="upi">BHIM UPI</option>
+                <option value="barodampay">Bank of Baroda</option>
+                <option value="idfcbank">IDFC First</option>
+                <option value="postbank">IPPB</option>
+              </datalist>
+            </div>
+            <!-- Quick Chips -->
+            <div class="handle-chips" aria-label="Quick Select Handle">
+              <span class="chips-caption">Popular:</span>
+              <button type="button" class="handle-chip" data-handle="okaxis">@okaxis</button>
+              <button type="button" class="handle-chip" data-handle="okhdfcbank">@okhdfcbank</button>
+              <button type="button" class="handle-chip" data-handle="ybl">@ybl</button>
+              <button type="button" class="handle-chip" data-handle="paytm">@paytm</button>
+              <button type="button" class="handle-chip" data-handle="upi">@upi</button>
+            </div>
+          </div>
+
+          <!-- Payee / Business Name -->
+          <div class="field-item">
+            <div class="field-label-row">
+              <label for="payeeName">Payee / Merchant Name <span class="required-star">*</span></label>
+              <span class="spec-param-badge">pn</span>
+            </div>
+            <input type="text" id="payeeName" placeholder="e.g. Acme Studio or John Doe" value="Acme Store" required>
+            <span class="field-hint">Displayed at the top of payer's approval screen.</span>
+          </div>
+
+          <!-- Amount & Currency -->
+          <div class="field-row">
+            <div class="field-item flex-2">
+              <div class="field-label-row">
+                <label for="amount">Amount</label>
+                <span class="spec-param-badge">am</span>
+              </div>
+              <div class="input-adornment-wrapper">
+                <span class="input-currency-symbol">₹</span>
+                <input type="number" id="amount" placeholder="0.00 (blank = payer enters)" step="0.01" min="1" max="100000" value="299.00">
+              </div>
+            </div>
+
+            <div class="field-item flex-1">
+              <div class="field-label-row">
+                <label for="currency">Currency</label>
+                <span class="spec-param-badge">cu</span>
+              </div>
+              <input type="text" id="currency" value="INR" readonly class="input-locked">
+            </div>
+          </div>
+
+          <!-- Transaction Ref & Note -->
+          <div class="field-row">
+            <div class="field-item flex-1">
+              <div class="field-label-row">
+                <label for="txRef">Transaction Ref ID</label>
+                <span class="spec-param-badge">tr</span>
+              </div>
+              <div class="input-inline-action">
+                <input type="text" id="txRef" placeholder="ORD-98421" value="ORD-7819">
+                <button type="button" id="btnGenRef" class="inline-btn" title="Generate New Order ID">⚡ Auto</button>
+              </div>
+            </div>
+
+            <div class="field-item flex-1">
+              <div class="field-label-row">
+                <label for="txNote">Payment Note</label>
+                <span class="spec-param-badge">tn</span>
+              </div>
+              <input type="text" id="txNote" placeholder="Order Memo" value="Digital Services" maxlength="50">
+            </div>
+          </div>
+
+          <!-- Advanced QR Customization Accordion -->
+          <details class="accordion-item" open>
+            <summary class="accordion-summary">
+              <div class="summary-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>QR Appearance &amp; Standee Themes</span>
+              </div>
+              <svg class="summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            
+            <div class="accordion-body">
+              <!-- Standee Theme Selector -->
+              <div class="field-item">
+                <label for="standeeThemeSelect">Merchant Standee Card Preset</label>
+                <select id="standeeThemeSelect">
+                  <option value="minimal-clean" selected>Clean Minimal (Crisp Counter Card)</option>
+                  <option value="upi-emerald">Official Emerald &amp; Navy</option>
+                  <option value="gradient-aurora">Aurora Gradient (Teal / Blue / Violet)</option>
+                  <option value="sleek-midnight">Midnight Obsidian (Dark Standee)</option>
+                </select>
+              </div>
+
+              <!-- Color Palette Controls -->
+              <div class="field-row">
+                <div class="field-item flex-1">
+                  <label class="color-picker-label">
+                    <span>QR Matrix Color</span>
+                    <div class="color-swatch-ring">
+                      <input type="color" id="qrDarkColor" value="#0f172a">
+                    </div>
+                  </label>
+                </div>
+                <div class="field-item flex-1">
+                  <label class="color-picker-label">
+                    <span>QR Background</span>
+                    <div class="color-swatch-ring">
+                      <input type="color" id="qrLightColor" value="#ffffff">
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- QR Center Logo & Error Correction -->
+              <div class="field-row">
+                <div class="field-item flex-1">
+                  <label for="qrCenterLogo">Center Emblem</label>
+                  <select id="qrCenterLogo">
+                    <option value="upi" selected>Official UPI Badge</option>
+                    <option value="lightning">Lightning Bolt</option>
+                    <option value="rupee">Indian Rupee (₹)</option>
+                    <option value="none">None (Clean Matrix)</option>
+                  </select>
+                </div>
+
+                <div class="field-item flex-1">
+                  <label for="qrEccLevel">Error Correction</label>
+                  <select id="qrEccLevel">
+                    <option value="L">L (7% Recovery - High Density)</option>
+                    <option value="M" selected>M (15% Recovery - Standard)</option>
+                    <option value="Q">Q (25% Recovery - High)</option>
+                    <option value="H">H (30% Recovery - Maximum)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Resolution & Border -->
+              <div class="field-row">
+                <div class="field-item flex-1">
+                  <label for="qrSizeSelect">QR Dimension</label>
+                  <select id="qrSizeSelect">
+                    <option value="200">200 px (Compact)</option>
+                    <option value="260" selected>260 px (Standard)</option>
+                    <option value="320">320 px (High Density)</option>
+                    <option value="400">400 px (Print Ultra HD)</option>
+                  </select>
+                </div>
+                <div class="field-item flex-1">
+                  <label for="qrQuietZone">Quiet Zone Margin</label>
+                  <select id="qrQuietZone">
+                    <option value="compact">Compact (8px)</option>
+                    <option value="standard" selected>Standard (16px)</option>
+                    <option value="spacious">Spacious (24px)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Advanced NPCI Specification Accordion -->
+          <details class="accordion-item">
+            <summary class="accordion-summary">
+              <div class="summary-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Advanced Protocol Parameters (MCC, Mode, Sign, MAM)</span>
+              </div>
+              <svg class="summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            
+            <div class="accordion-body">
+              <div class="field-row">
+                <div class="field-item flex-1">
+                  <div class="field-label-row">
+                    <label for="mccCode">MCC Code</label>
+                    <span class="spec-param-badge">mc</span>
+                  </div>
+                  <input type="text" id="mccCode" placeholder="5411" maxlength="4">
+                </div>
+                <div class="field-item flex-1">
+                  <div class="field-label-row">
+                    <label for="minAmount">Min Amount</label>
+                    <span class="spec-param-badge">mam</span>
+                  </div>
+                  <input type="number" id="minAmount" placeholder="50.00" step="0.01">
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-item flex-1">
+                  <div class="field-label-row">
+                    <label for="initMode">Initiation Mode</label>
+                    <span class="spec-param-badge">mode</span>
+                  </div>
+                  <select id="initMode">
+                    <option value="00" selected>00 — Default</option>
+                    <option value="01">01 — QR Code Scan</option>
+                    <option value="02">02 — Secure QR (Signed)</option>
+                    <option value="04">04 — Mobile App Intent</option>
+                  </select>
+                </div>
+                <div class="field-item flex-1">
+                  <div class="field-label-row">
+                    <label for="callbackUrl">Callback URL</label>
+                    <span class="spec-param-badge">url</span>
+                  </div>
+                  <input type="url" id="callbackUrl" placeholder="https://store.com/receipt">
+                </div>
+              </div>
+
+              <div class="field-item">
+                <div class="field-label-row">
+                  <label for="digitalSign">Base64 Digital Signature</label>
+                  <span class="spec-param-badge">sign</span>
+                </div>
+                <input type="text" id="digitalSign" placeholder="Cryptographic PKI signature for verified NPCI merchants">
+              </div>
+            </div>
+          </details>
+        </form>
+      </section>
+
+      <!-- Right Interactive Canvas / Preview Stage -->
+      <section class="workbench-card stage-panel" aria-labelledby="stage-title">
+        <!-- TAB 1: QR STANDEE PREVIEW -->
+        <div class="tab-content active" id="tab-qr" role="tabpanel">
+          <div class="stage-header">
+            <span class="stage-tag">Physical Counter Standee</span>
+            <div class="scale-info">Vector Scaled &bull; Ready to Scan</div>
+          </div>
+
+          <!-- Merchant Physical Standee Preview -->
+          <div class="standee-wrapper" id="qrStand">
+            <!-- Top Branding -->
+            <div class="standee-header">
+              <div class="standee-logo-bar">
+                <img src="assets/upi-logo.svg" alt="UPI" class="standee-upi-img" height="28">
+                <div class="standee-accepted-pill">
+                  <img src="assets/google-pay-logo.svg" alt="Google Pay" title="Google Pay" height="16">
+                  <img src="assets/phonepe-logo.svg" alt="PhonePe" title="PhonePe" height="16">
+                  <img src="assets/paytm-logo.svg" alt="Paytm" title="Paytm" height="14">
+                </div>
+              </div>
+              <h3 id="displayPayeeName" class="standee-payee-title">Acme Store</h3>
+              <p id="displayVpa" class="standee-vpa-mono">merchant@okaxis</p>
+            </div>
+
+            <!-- QR Code Canvas Frame -->
+            <div class="standee-qr-frame" id="standeeQrFrame">
+              <div id="qrcode"></div>
+              <div class="qr-center-emblem" id="qrCenterEmblem">
+                <div class="emblem-content" id="emblemContent">UPI</div>
+              </div>
+            </div>
+
+            <!-- Standee Footer -->
+            <div class="standee-footer">
+              <div class="standee-amount-pill" id="displayAmountTag">
+                <span class="pill-label">Amount Payable</span>
+                <strong id="displayAmount" class="pill-value">₹299.00</strong>
+              </div>
+              <p class="standee-disclaimer">Scan with Google Pay, PhonePe, Paytm, or BHIM</p>
+            </div>
+          </div>
+
+          <!-- Standee Action Controls -->
+          <div class="stage-actions">
+            <button class="tactile-btn btn-primary" id="btnDownloadPNG">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Download Standee PNG</span>
+            </button>
+            <button class="tactile-btn btn-secondary" id="btnDownloadQROnly">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <span>Export Raw QR</span>
+            </button>
+            <button class="tactile-btn btn-secondary" id="btnPrintQR">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/></svg>
+              <span>Print Standee</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: DEEP LINK INTENT -->
+        <div class="tab-content" id="tab-intent" role="tabpanel">
+          <div class="stage-header">
+            <span class="stage-tag">Standardized URI Protocol</span>
+            <div class="scale-info">Direct Handshake with PSP Apps</div>
+          </div>
+
+          <div class="code-surface">
+            <div class="code-surface-header">
+              <span class="code-surface-title">Compiled UPI Deep Link</span>
+              <button class="tactile-copy-btn" id="btnCopyUri">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span>Copy URI</span>
+              </button>
+            </div>
+            <pre><code id="intentUriCode">upi://pay?pa=...</code></pre>
+          </div>
+
+          <!-- Direct App Launcher Grid -->
+          <div class="intent-launchers-section">
+            <h4 class="section-title">Test Direct Launchers (Mobile / Device Choosers)</h4>
+            <div class="app-cards-grid">
+              <a id="btnTriggerUniversal" href="#" class="app-trigger-card app-card-universal">
+                <div class="app-card-icon">
+                  <img src="assets/upi-logo.svg" alt="UPI" width="34">
+                </div>
+                <div class="app-card-meta">
+                  <strong>Default UPI Intent</strong>
+                  <span>Standard `upi://pay`</span>
+                </div>
+              </a>
+
+              <a id="btnTriggerGPay" href="#" class="app-trigger-card" target="_blank" rel="noopener">
+                <div class="app-card-icon">
+                  <img src="assets/google-pay-logo.svg" alt="Google Pay" width="30">
+                </div>
+                <div class="app-card-meta">
+                  <strong>Google Pay</strong>
+                  <span>`gpay://upi/pay`</span>
+                </div>
+              </a>
+
+              <a id="btnTriggerPhonePe" href="#" class="app-trigger-card" target="_blank" rel="noopener">
+                <div class="app-card-icon phonepe-bg">
+                  <img src="assets/phonepe-logo.svg" alt="PhonePe" width="24">
+                </div>
+                <div class="app-card-meta">
+                  <strong>PhonePe</strong>
+                  <span>`phonepe://pay`</span>
+                </div>
+              </a>
+
+              <a id="btnTriggerPaytm" href="#" class="app-trigger-card" target="_blank" rel="noopener">
+                <div class="app-card-icon">
+                  <img src="assets/paytm-logo.svg" alt="Paytm" width="32">
+                </div>
+                <div class="app-card-meta">
+                  <strong>Paytm</strong>
+                  <span>`paytmmp://pay`</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Parameter Breakdown Table -->
+          <div class="param-breakdown-section">
+            <h4 class="section-title">Active Protocol Parameters</h4>
+            <div class="table-frame">
+              <table class="spec-table">
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>NPCI Name</th>
+                    <th>Resolved Value</th>
+                  </tr>
+                </thead>
+                <tbody id="paramsTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: HTML BUTTON GENERATOR -->
+        <div class="tab-content" id="tab-button" role="tabpanel">
+          <div class="stage-header">
+            <span class="stage-tag">Zero-Fee Payment Button</span>
+            <div class="scale-info">Self-Contained HTML/CSS</div>
+          </div>
+
+          <!-- Button Live Preview -->
+          <div class="live-button-stage">
+            <span class="stage-subtext">Live Render Preview</span>
+            <div id="buttonLiveRenderContainer" class="button-mount-point"></div>
+          </div>
+
+          <!-- Button Appearance Controls -->
+          <div class="button-config-grid">
+            <div class="field-item">
+              <label for="btnThemePreset">Button Theme Preset</label>
+              <select id="btnThemePreset">
+                <option value="modern-gradient" selected>Modern Aurora Gradient</option>
+                <option value="gpay-white">Minimalist Card (Clean Light)</option>
+                <option value="sleek-dark">Dark Minimalist</option>
+                <option value="phonepe-purple">PhonePe Vibrant Purple</option>
+                <option value="emerald-green">Emerald Success</option>
+              </select>
+            </div>
+            <div class="field-item">
+              <label for="btnTextCustom">Button Label</label>
+              <input type="text" id="btnTextCustom" value="Pay with UPI">
+            </div>
+          </div>
+
+          <div class="toggle-checkbox-row">
+            <label class="tactile-checkbox">
+              <input type="checkbox" id="btnShowAmount" checked>
+              <span>Display Amount Badge inside Button</span>
+            </label>
+            <label class="tactile-checkbox">
+              <input type="checkbox" id="btnShowIcons" checked>
+              <span>Include UPI Lightning SVG Icon</span>
+            </label>
+          </div>
+
+          <!-- Standalone HTML Snippet -->
+          <div class="code-surface">
+            <div class="code-surface-header">
+              <span class="code-surface-title">Copy-Paste HTML &amp; Inline CSS</span>
+              <button class="tactile-copy-btn" id="btnCopyHtml">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span>Copy Code</span>
+              </button>
+            </div>
+            <pre><code id="htmlSnippetCode">&lt;!-- Loading button... --&gt;</code></pre>
+          </div>
+
+          <!-- Universal Mobile Intent + Desktop QR Script -->
+          <div class="code-surface" style="margin-top: 16px;">
+            <div class="code-surface-header">
+              <span class="code-surface-title">Desktop Modal + Mobile Universal Script</span>
+              <button class="tactile-copy-btn" id="btnCopyUniversalScript">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span>Copy Script</span>
+              </button>
+            </div>
+            <pre><code id="jsUniversalSnippetCode">&lt;!-- Script loading... --&gt;</code></pre>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Technical Specification Architecture Card -->
+    <section class="workbench-card guide-panel">
+      <div class="guide-header">
+        <div class="guide-icon-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <h3>NPCI Unified Payments Interface Protocol Anatomy</h3>
+          <p class="guide-subline">How QR codes and Intent URIs decode across PSP apps.</p>
+        </div>
+      </div>
+
+      <div class="guide-columns">
+        <div class="guide-col">
+          <h4>URI Structure</h4>
+          <p>Every UPI checkout begins with the custom scheme <code>upi://pay</code> followed by query parameters. Mobile operating systems (Android Intent Filters &amp; iOS Universal Links) parse this scheme and pass the dictionary of key-value pairs to verified payment apps (GPay, PhonePe, Paytm, BHIM).</p>
+        </div>
+        <div class="guide-col">
+          <h4>Desktop vs Mobile Handshake</h4>
+          <p>Because desktop browsers lack native UPI hardware token storage, attempting to launch <code>upi://</code> directly will trigger an unhandled protocol error. The recommended merchant pattern is displaying the dynamic QR standee for smartphone camera scans.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Tactile Toast Feedback -->
+  <div id="toast" class="tactile-toast" role="status" aria-live="polite">Copied to clipboard!</div>
+
+  <footer class="workbench-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/upi-studio-logo.svg" alt="UPI Studio" width="20" height="20">
+        <span>UPI Studio Workbench &bull; NPCI Spec Compliant</span>
+      </div>
+      <p class="footer-privacy">Client-side rendering only. Zero analytics, telemetry, or remote transmission of payment VPAs.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
