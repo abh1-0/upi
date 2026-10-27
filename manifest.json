@@ -1,0 +1,16 @@
+{
+  "name": "UPI Studio",
+  "short_name": "UPI Studio",
+  "description": "All-in-one NPCI UPI QR code generator, standee printer, deep link intent compiler, GST invoice maker, and soundbox simulator.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070A12",
+  "theme_color": "#070A12",
+  "icons": [
+    {
+      "src": "assets/upi-studio-logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

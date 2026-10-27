@@ -60,6 +60,7 @@ const dom = {
   viewPrimary: document.getElementById('view-primary'),
   viewInvoice: document.getElementById('view-invoice'),
   viewSoundbox: document.getElementById('view-soundbox'),
+  viewScanner: document.getElementById('view-scanner'),
   viewBatch: document.getElementById('view-batch'),
   viewParser: document.getElementById('view-parser'),
 
@@ -185,6 +186,21 @@ const dom = {
   btnExecuteParse: document.getElementById('btnExecuteParse'),
   parserVerdictBadge: document.getElementById('parserVerdictBadge'),
   parserReportTable: document.getElementById('parserReportTable'),
+
+  // Camera Scanner
+  btnToggleCamera: document.getElementById('btnToggleCamera'),
+  btnToggleCameraText: document.getElementById('btnToggleCameraText'),
+  qrFileInput: document.getElementById('qrFileInput'),
+  scannerResultBadge: document.getElementById('scannerResultBadge'),
+  scannerDecodedText: document.getElementById('scannerDecodedText'),
+  scannerActionsZone: document.getElementById('scannerActionsZone'),
+  btnPayDecodedUri: document.getElementById('btnPayDecodedUri'),
+  btnLoadIntoWorkbench: document.getElementById('btnLoadIntoWorkbench'),
+
+  // Mobile Sticky Bar
+  mobileBarAmount: document.getElementById('mobileBarAmount'),
+  mobileDirectPayBtn: document.getElementById('mobileDirectPayBtn'),
+  mobileQuickShareBtn: document.getElementById('mobileQuickShareBtn'),
 
   // Global Controls
   btnQuickShare: document.getElementById('btnQuickShare'),
@@ -528,8 +544,10 @@ function refreshAll() {
   if (amt && !isNaN(amt) && parseFloat(amt) > 0) {
     dom.displayAmount.textContent = `₹${parseFloat(amt).toFixed(2)}`;
     dom.displayAmountTag.style.display = 'flex';
+    if (dom.mobileBarAmount) dom.mobileBarAmount.textContent = `₹${parseFloat(amt).toFixed(2)}`;
   } else {
     dom.displayAmountTag.style.display = 'none';
+    if (dom.mobileBarAmount) dom.mobileBarAmount.textContent = 'Custom Amount';
   }
 
   // Standee Theme
@@ -1195,6 +1213,111 @@ function executeParse() {
 }
 
 /* ==========================================================================
+   MODULE: LIVE CAMERA QR SCANNER
+   ========================================================================== */
+
+let html5QrScannerInstance = null;
+let isCameraActive = false;
+
+function handleDecodedQrText(decodedText) {
+  dom.scannerResultBadge.style.display = 'inline-block';
+  dom.scannerDecodedText.textContent = decodedText;
+  dom.scannerActionsZone.style.display = 'flex';
+
+  if (decodedText.startsWith('upi://pay')) {
+    dom.btnPayDecodedUri.href = decodedText;
+    dom.btnPayDecodedUri.style.display = 'inline-flex';
+  } else {
+    dom.btnPayDecodedUri.style.display = 'none';
+  }
+
+  showToast('QR Code Decoded Successfully!');
+}
+
+function toggleCameraScanner() {
+  if (!window.Html5Qrcode) {
+    showToast('Scanner library still initializing...');
+    return;
+  }
+
+  if (isCameraActive) {
+    if (html5QrScannerInstance) {
+      html5QrScannerInstance.stop().then(() => {
+        isCameraActive = false;
+        dom.btnToggleCameraText.textContent = 'Start Camera Scanner';
+        showToast('Camera stopped');
+      }).catch((err) => console.error(err));
+    }
+  } else {
+    html5QrScannerInstance = new Html5Qrcode('qrReaderContainer');
+    html5QrScannerInstance.start(
+      { facingMode: 'environment' },
+      { fps: 15, qrbox: { width: 220, height: 220 } },
+      (decodedText) => {
+        handleDecodedQrText(decodedText);
+        // Optionally stop after first hit
+      },
+      (err) => {}
+    ).then(() => {
+      isCameraActive = true;
+      dom.btnToggleCameraText.textContent = 'Stop Camera Scanner';
+      showToast('Camera active — Aim at any UPI QR');
+    }).catch((err) => {
+      console.error(err);
+      showToast('Camera permission denied or camera unavailable');
+    });
+  }
+}
+
+function scanQrFromFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!window.Html5Qrcode) {
+    showToast('Scanner engine initializing...');
+    return;
+  }
+
+  const scanner = new Html5Qrcode('qrReaderContainer');
+  scanner.scanFile(file, true)
+    .then((decodedText) => {
+      handleDecodedQrText(decodedText);
+    })
+    .catch((err) => {
+      showToast('No scannable QR code found in image');
+    });
+}
+
+function loadDecodedIntoWorkbench() {
+  const text = dom.scannerDecodedText.textContent;
+  if (!text || !text.startsWith('upi://pay?')) {
+    showToast('Not a standard upi://pay link');
+    return;
+  }
+
+  const urlParams = new URLSearchParams(text.replace('upi://pay?', ''));
+  const pa = urlParams.get('pa');
+  const pn = urlParams.get('pn');
+  const am = urlParams.get('am');
+  const tr = urlParams.get('tr');
+  const tn = urlParams.get('tn');
+
+  if (pa && pa.includes('@')) {
+    const [u, h] = pa.split('@');
+    dom.username.value = u;
+    dom.handle.value = h;
+  }
+  if (pn) dom.payeeName.value = pn;
+  if (am) dom.amount.value = am;
+  if (tr) dom.txRef.value = tr;
+  if (tn) dom.txNote.value = tn;
+
+  switchModule('tab-qr');
+  refreshAll();
+  showToast('Loaded into Studio Cockpit!');
+}
+
+/* ==========================================================================
    NAVIGATION TAB SWITCHING
    ========================================================================== */
 
@@ -1212,6 +1335,7 @@ function switchModule(targetTab) {
   dom.viewPrimary.style.display = isCockpit ? 'grid' : 'none';
   dom.viewInvoice.style.display = targetTab === 'tab-invoice' ? 'block' : 'none';
   dom.viewSoundbox.style.display = targetTab === 'tab-soundbox' ? 'block' : 'none';
+  dom.viewScanner.style.display = targetTab === 'tab-scanner' ? 'block' : 'none';
   dom.viewBatch.style.display = targetTab === 'tab-batch' ? 'block' : 'none';
   dom.viewParser.style.display = targetTab === 'tab-parser' ? 'block' : 'none';
 
@@ -1404,6 +1528,21 @@ function bindAllEvents() {
 
   // Parser Events
   dom.btnExecuteParse.addEventListener('click', executeParse);
+
+  // Scanner Events
+  if (dom.btnToggleCamera) dom.btnToggleCamera.addEventListener('click', toggleCameraScanner);
+  if (dom.qrFileInput) dom.qrFileInput.addEventListener('change', scanQrFromFile);
+  if (dom.btnLoadIntoWorkbench) dom.btnLoadIntoWorkbench.addEventListener('click', loadDecodedIntoWorkbench);
+
+  // Mobile Sticky Bar Actions
+  if (dom.mobileDirectPayBtn) {
+    dom.mobileDirectPayBtn.addEventListener('click', () => {
+      window.location.href = buildUpiUri('upi');
+    });
+  }
+  if (dom.mobileQuickShareBtn) {
+    dom.mobileQuickShareBtn.addEventListener('click', shareCurrentConfig);
+  }
 }
 
 // Initial Boot

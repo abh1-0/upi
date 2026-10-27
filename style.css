@@ -1058,3 +1058,205 @@ input:focus, select:focus, textarea:focus {
     position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; box-shadow: none !important; border: none !important;
   }
 }
+/* ==========================================================================
+   UPI Studio Pro v3.2 — Mobile Responsive, Scanner & AI Agent Additions
+   ========================================================================== */
+
+/* CAMERA QR SCANNER STYLES */
+.scanner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media (max-width: 900px) { .scanner-grid { grid-template-columns: 1fr; } }
+
+.camera-lens-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 320px;
+  margin: 0 auto 16px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  border: 2px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-camera-viewport {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}
+.qr-camera-viewport video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* Futuristic Scan Reticle */
+.scanner-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+  z-index: 10;
+}
+.reticle-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--accent-upi-emerald);
+  border-style: solid;
+}
+.reticle-corner.top-left { top: 0; left: 0; border-width: 3px 0 0 3px; }
+.reticle-corner.top-right { top: 0; right: 0; border-width: 3px 3px 0 0; }
+.reticle-corner.btm-left { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+.reticle-corner.btm-right { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+
+.scan-laser-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-upi-emerald), transparent);
+  box-shadow: 0 0 8px var(--accent-upi-emerald);
+  animation: scanLaser 2s linear infinite;
+}
+@keyframes scanLaser {
+  0% { top: 5%; opacity: 0.8; }
+  50% { top: 95%; opacity: 1; }
+  100% { top: 5%; opacity: 0.8; }
+}
+
+.scanner-controls-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.file-upload-btn {
+  cursor: pointer;
+}
+
+/* MOBILE STICKY BOTTOM ACTION BAR */
+.mobile-sticky-action-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(11, 15, 25, 0.94);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--glass-border);
+  padding: 10px 16px;
+  z-index: 150;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+}
+[data-theme="light"] .mobile-sticky-action-bar {
+  background: rgba(255, 255, 255, 0.94);
+}
+.mobile-action-details {
+  display: flex;
+  flex-direction: column;
+}
+.mobile-action-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.mobile-action-details strong {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--accent-upi-emerald);
+}
+.mobile-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mobile-pay-btn {
+  min-height: 42px;
+  padding: 8px 18px;
+  font-size: 0.88rem;
+}
+.mobile-share-btn {
+  min-height: 42px;
+  width: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* FOOTER LINKS */
+.footer-links-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.footer-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--accent-beam-blue);
+  text-decoration: none;
+}
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+@media (max-width: 768px) {
+  .glass-navbar .nav-shell {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .brand-title {
+    font-size: 1.05rem;
+  }
+  .brand-subline {
+    display: none;
+  }
+  .workbench-viewport {
+    padding: 14px 14px 80px 14px; /* Space for sticky bottom bar */
+  }
+  .workbench-card {
+    padding: 16px;
+  }
+  .mobile-sticky-action-bar {
+    display: flex;
+  }
+  .stats-ticker-bar {
+    font-size: 0.68rem;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .standee-wrapper {
+    max-width: 100%;
+    padding: 18px;
+  }
+  .standee-qr-frame {
+    margin: 8px 0;
+  }
+  .app-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .stage-actions {
+    gap: 6px;
+  }
+  .tactile-btn {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    min-height: 38px;
+  }
+}

@@ -2,23 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Studio — Complete NPCI UPI Toolkit &amp; Terminal</title>
-  <meta name="description" content="All-in-one UPI toolkit: dynamic QR codes, counter standees, deep link compiler, web payment buttons, GST invoice builder with QR, multi-language voice soundbox, link parser, and bulk batch generation.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  
+  <!-- Primary SEO Meta Tags -->
+  <title>UPI Studio — All-in-One UPI QR Generator, Standee Maker &amp; Deep Link Compiler</title>
+  <meta name="title" content="UPI Studio — All-in-One UPI QR Generator, Standee Maker &amp; Deep Link Compiler">
+  <meta name="description" content="Generate NPCI-compliant UPI QR codes, retail counter standees, deep link intent URLs, HTML embed buttons, GST invoices with QR, multilingual voice soundbox, and bulk QR codes. Zero gateway fees.">
+  <meta name="keywords" content="UPI QR generator, NPCI upi specification, upi intent link generator, pay with upi button, gpay deep link, phonepe intent link, upi soundbox simulator, upi invoice generator, bulk upi qr, free upi qr code">
+  <meta name="author" content="UPI Studio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://upi.abh1.xyz/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://upi.abh1.xyz/">
+  <meta property="og:title" content="UPI Studio — Complete NPCI UPI Toolkit &amp; Terminal">
+  <meta property="og:description" content="Generate dynamic UPI QR codes, counter standees, deep links, embed buttons, GST invoices, and soundbox audio. 100% free &amp; client-side.">
+  <meta property="og:image" content="https://upi.abh1.xyz/assets/upi-studio-logo.svg">
+
+  <!-- Twitter Card -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://upi.abh1.xyz/">
+  <meta property="twitter:title" content="UPI Studio — Complete NPCI UPI Toolkit &amp; Terminal">
+  <meta property="twitter:description" content="Generate dynamic UPI QR codes, counter standees, deep links, embed buttons, GST invoices, and soundbox audio. 100% free &amp; client-side.">
+  <meta property="twitter:image" content="https://upi.abh1.xyz/assets/upi-studio-logo.svg">
+
+  <!-- Mobile & PWA Configuration -->
   <meta name="theme-color" content="#070A12">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="assets/upi-studio-logo.svg">
   <link rel="apple-touch-icon" href="assets/upi-studio-logo.svg">
   
-  <!-- Fonts -->
+  <!-- AI Agent API Reference Link -->
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="AI Agent Specification">
+
+  <!-- Structured Data JSON-LD for Search Engines & LLMs -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "UPI Studio",
+    "url": "https://upi.abh1.xyz/",
+    "description": "Comprehensive toolkit for NPCI UPI payment integration, dynamic counter QR standees, mobile intent deep links, GST invoices with scannable QR, and software soundbox simulation.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "featureList": [
+      "Dynamic NPCI UPI QR Code Generation",
+      "High-Resolution Vector SVG and Retina PNG Standee Export",
+      "Mobile Deep Link Intent URI Generation (GPay, PhonePe, Paytm, BHIM)",
+      "Embeddable 'Pay with UPI' HTML and JavaScript Modal Buttons",
+      "Printable GST Tax Invoice Builder with Scannable QR and Barcode",
+      "Multilingual Web Speech Voice Soundbox Simulator in 8+ Indian Languages",
+      "Live Camera QR Scanner & Link Decoder",
+      "Batch CSV UPI QR Generator for Multi-Table / Multi-Branch Fleets",
+      "Client-side zero-telemetry security"
+    ]
+  }
+  </script>
+
+  <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- CDNs for QR Code, Barcode, and PDF -->
+  <!-- Client-Side Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   
   <link rel="stylesheet" href="style.css">
 </head>
@@ -37,13 +97,13 @@
         <div class="brand-text">
           <div class="brand-title-row">
             <span class="brand-title">UPI Studio</span>
-            <span class="spec-pill">Pro v3.0</span>
+            <span class="spec-pill">Pro v3.2</span>
           </div>
           <span class="brand-subline">All-in-One NPCI Toolkit &bull; Zero Gateway Commission</span>
         </div>
       </div>
 
-      <!-- Feature Module Tabs -->
+      <!-- Feature Module Tabs (Scrollable on Mobile) -->
       <nav class="nav-segment-control" role="tablist" id="mainTabList">
         <button class="segment-tab active" data-tab="tab-qr" role="tab" aria-selected="true" id="tabNavQR">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
@@ -59,11 +119,15 @@
         </button>
         <button class="segment-tab highlight-pill" data-tab="tab-invoice" role="tab" aria-selected="false">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          <span>Invoice Builder</span>
+          <span>GST Invoice</span>
         </button>
         <button class="segment-tab highlight-pill" data-tab="tab-soundbox" role="tab" aria-selected="false">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           <span>Voice Soundbox</span>
+        </button>
+        <button class="segment-tab" data-tab="tab-scanner" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Camera Scanner</span>
         </button>
         <button class="segment-tab" data-tab="tab-batch" role="tab" aria-selected="false">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -76,6 +140,10 @@
       </nav>
 
       <div class="nav-actions">
+        <!-- AI Agent spec shortcut -->
+        <a href="/llms.txt" target="_blank" class="icon-control-btn" title="View AI Agent API Spec (llms.txt)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm1 14h-2v2h2v-2zm0-10h-2v8h2V6z"/></svg>
+        </a>
         <!-- Presets Load/Save -->
         <button id="btnQuickShare" class="icon-control-btn" title="Share Config URL">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -94,7 +162,7 @@
     <div class="stats-ticker-bar">
       <div class="ticker-item"><span class="ticker-dot green"></span> Direct Peer-to-Peer / P2M (0% Gateway Fee)</div>
       <div class="ticker-item">&bull; Universal Support: Google Pay, PhonePe, Paytm, Cred, BHIM, Navi, Banks</div>
-      <div class="ticker-item">&bull; 100% Client-Side Encryption &amp; Generation</div>
+      <div class="ticker-item">&bull; 100% Client-Side Privacy (Zero Telemetry)</div>
     </div>
 
     <!-- MAIN VIEW 1: DUAL COCKPIT (QR, INTENT, BUTTON) -->
@@ -848,7 +916,63 @@
       </div>
     </div>
 
-    <!-- MAIN VIEW 4: BATCH / BULK QR GENERATION -->
+    <!-- MAIN VIEW 4: LIVE CAMERA QR SCANNER -->
+    <div id="view-scanner" class="fullwidth-module" style="display: none;">
+      <div class="module-header-row">
+        <div>
+          <span class="module-pill">Camera Lens &bull; File Scan &bull; Decryption</span>
+          <h2>Live Camera UPI QR Scanner &amp; Reader</h2>
+          <p class="module-desc">Scan physical counter QR codes using your device camera or upload image files to decode UPI parameters and test instant payments.</p>
+        </div>
+      </div>
+
+      <div class="scanner-grid">
+        <div class="workbench-card scanner-feed-card">
+          <div class="camera-lens-wrapper">
+            <div id="qrReaderContainer" class="qr-camera-viewport"></div>
+            <div class="scanner-reticle" aria-hidden="true">
+              <span class="reticle-corner top-left"></span>
+              <span class="reticle-corner top-right"></span>
+              <span class="reticle-corner btm-left"></span>
+              <span class="reticle-corner btm-right"></span>
+              <div class="scan-laser-line"></div>
+            </div>
+          </div>
+          
+          <div class="scanner-controls-actions">
+            <button class="tactile-btn btn-primary" id="btnToggleCamera">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span id="btnToggleCameraText">Start Camera Scanner</span>
+            </button>
+            
+            <label class="tactile-btn btn-secondary file-upload-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Scan QR from Image File</span>
+              <input type="file" id="qrFileInput" accept="image/*" style="display: none;">
+            </label>
+          </div>
+        </div>
+
+        <div class="workbench-card scanner-output-card">
+          <h3>Decoded QR Payload</h3>
+          <div id="scannerResultBadge" class="verdict-badge valid" style="display: none;">Code Detected</div>
+          <div class="code-surface" style="margin-top: 12px;">
+            <pre><code id="scannerDecodedText">Camera idle. Click "Start Camera Scanner" or upload an image file containing a UPI QR code.</code></pre>
+          </div>
+
+          <div class="scanner-action-buttons" id="scannerActionsZone" style="display: none; margin-top: 14px;">
+            <a id="btnPayDecodedUri" href="#" class="tactile-btn btn-primary">
+              <span>⚡ Open in UPI App</span>
+            </a>
+            <button id="btnLoadIntoWorkbench" class="tactile-btn btn-secondary">
+              <span>Load into Studio Workbench</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW 5: BATCH / BULK QR GENERATION -->
     <div id="view-batch" class="fullwidth-module" style="display: none;">
       <div class="module-header-row">
         <div>
@@ -890,7 +1014,7 @@ delivery@ybl, Express Rider, 499.00, ORD-551, Food Order"></textarea>
       </div>
     </div>
 
-    <!-- MAIN VIEW 5: DEEP LINK PARSER & VERIFIER -->
+    <!-- MAIN VIEW 6: DEEP LINK PARSER & VERIFIER -->
     <div id="view-parser" class="fullwidth-module" style="display: none;">
       <div class="module-header-row">
         <div>
@@ -958,6 +1082,22 @@ delivery@ybl, Express Rider, 499.00, ORD-551, Food Order"></textarea>
     </section>
   </main>
 
+  <!-- Mobile Sticky Quick CTA Bar -->
+  <aside class="mobile-sticky-action-bar" aria-label="Mobile Payment Quick Action">
+    <div class="mobile-action-details">
+      <span class="mobile-action-label">Ready to Pay:</span>
+      <strong id="mobileBarAmount">₹299.00</strong>
+    </div>
+    <div class="mobile-action-buttons">
+      <button class="tactile-btn btn-primary mobile-pay-btn" id="mobileDirectPayBtn">
+        <span>⚡ Open in App</span>
+      </button>
+      <button class="tactile-btn btn-secondary mobile-share-btn" id="mobileQuickShareBtn" title="Share Link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+    </div>
+  </aside>
+
   <!-- Tactile Toast Feedback -->
   <div id="toast" class="tactile-toast" role="status" aria-live="polite">Copied to clipboard!</div>
 
@@ -966,6 +1106,11 @@ delivery@ybl, Express Rider, 499.00, ORD-551, Food Order"></textarea>
       <div class="footer-brand">
         <img src="assets/upi-studio-logo.svg" alt="UPI Studio" width="22" height="22">
         <span>UPI Studio Workbench Pro &bull; Fully Feature-Packed &bull; NPCI Spec Compliant</span>
+      </div>
+      <div class="footer-links-row">
+        <a href="/llms.txt" target="_blank" class="footer-link">AI Agent Spec (/llms.txt)</a>
+        <a href="/sitemap.xml" target="_blank" class="footer-link">Sitemap</a>
+        <a href="/robots.txt" target="_blank" class="footer-link">Robots.txt</a>
       </div>
       <p class="footer-privacy">Client-side rendering only. Zero analytics, telemetry, or remote transmission of payment VPAs.</p>
     </div>

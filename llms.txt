@@ -1,0 +1,84 @@
+# UPI Studio — Agent API & Schema Documentation (NPCI v2.0)
+
+> This document is designed for AI agents, LLMs, and API clients looking to programmatically construct, validate, parse, or embed NPCI-compliant Unified Payments Interface (UPI) deep links and QR codes.
+
+## Service Overview
+- **Domain**: `https://upi.abh1.xyz/`
+- **Protocol**: National Payments Corporation of India (NPCI) UPI Deep Linking Specification
+- **URI Scheme**: `upi://pay`
+- **Fee**: 0% Gateway Commission (Peer-to-Peer & Peer-to-Merchant direct settlement)
+
+---
+
+## 1. Parameters Specification
+
+| Key | Spec Name | Type | Required | Description | Example |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `pa` | Payee Address (VPA) | string | **Yes** | Virtual Payment Address (UPI ID) of the recipient | `merchant@okaxis` |
+| `pn` | Payee Name | string | **Yes** | Display name of the business or individual | `Acme Store` |
+| `am` | Amount | decimal | No | Transaction amount in INR formatted to 2 decimals | `499.00` |
+| `cu` | Currency | string | Conditional | Currency code. **Must be `INR`** whenever `am` is provided | `INR` |
+| `tr` | Transaction Reference | string | No | Unique tracking / Order / Invoice ID | `ORD-98421` |
+| `tn` | Transaction Note | string | No | Memo / note shown in bank passbook (Max 50 chars) | `Digital Services` |
+| `mc` | Merchant Category Code | string | No | 4-digit ISO MCC identifying business category | `5411` |
+| `mam` | Minimum Amount | decimal | No | Minimum amount allowed when partial payment is supported | `50.00` |
+| `mode` | Initiation Mode | string | No | `00` (Default), `01` (Static/Dynamic QR), `04` (App Intent) | `01` |
+| `url` | Callback URL | url | No | URL to fetch receipt, invoice, or callback | `https://store.com/receipt` |
+| `sign` | Digital Signature | base64 | No | Base64 PKI signature for verified tamper-proof links | `MEQCIB...` |
+
+---
+
+## 2. Standard Deep Link Construction Algorithm
+
+```javascript
+function generateUpiLink(params) {
+  const query = [];
+  query.push(`pa=${encodeURIComponent(params.pa)}`);
+  query.push(`pn=${encodeURIComponent(params.pn)}`);
+  
+  if (params.am && Number(params.am) > 0) {
+    query.push(`am=${encodeURIComponent(Number(params.am).toFixed(2))}`);
+    query.push(`cu=INR`);
+  }
+  if (params.tr) query.push(`tr=${encodeURIComponent(params.tr)}`);
+  if (params.tn) query.push(`tn=${encodeURIComponent(params.tn.substring(0, 50))}`);
+  if (params.mc) query.push(`mc=${encodeURIComponent(params.mc)}`);
+  if (params.mam) query.push(`mam=${encodeURIComponent(Number(params.mam).toFixed(2))}`);
+  if (params.mode && params.mode !== '00') query.push(`mode=${encodeURIComponent(params.mode)}`);
+  if (params.url) query.push(`url=${encodeURIComponent(params.url)}`);
+  if (params.sign) query.push(`sign=${encodeURIComponent(params.sign)}`);
+
+  return `upi://pay?${query.join('&')}`;
+}
+```
+
+---
+
+## 3. App-Specific Intent Schemes
+
+* **Universal Chooser**: `upi://pay?...`
+* **Google Pay**: `gpay://upi/pay?...`
+* **PhonePe**: `phonepe://pay?...`
+* **Paytm**: `paytmmp://pay?...`
+
+---
+
+## 4. Web Embed Button Template
+
+```html
+<a href="upi://pay?pa=merchant@okaxis&pn=Store&am=299.00&cu=INR&tr=ORD-101" 
+   style="display:inline-flex;align-items:center;gap:8px;background:#00D26A;color:#0F172A;padding:12px 24px;border-radius:12px;font-weight:700;text-decoration:none;">
+  ⚡ Pay ₹299.00 with UPI
+</a>
+```
+
+---
+
+## 5. Web UI Features Available at `https://upi.abh1.xyz/`
+
+1. **Merchant Standees**: Vector SVG and Retina PNG exports.
+2. **GST Invoices**: Client-side PDF generation with dynamic UPI QR & Code-128 Barcode.
+3. **Hardware Soundbox Simulator**: Multilingual speech synthesis across 8+ Indian languages.
+4. **Camera Scanner**: Live webcam/phone camera scanner for decoding UPI QR codes.
+5. **Bulk CSV Processor**: Fleet multi-table & branch QR card printing.
+6. **State Sharing**: Persistent hash URLs (e.g., `https://upi.abh1.xyz/#user=store&handle=okaxis&am=500`).
