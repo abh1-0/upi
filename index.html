@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Studio — Developer Workbench & QR Generator</title>
-  <meta name="description" content="Generate NPCI-compliant UPI QR codes, customizable merchant standees, mobile intent triggers, and copy-paste 'Pay with UPI' HTML embed buttons.">
+  <title>UPI Studio — Complete NPCI UPI Toolkit &amp; Terminal</title>
+  <meta name="description" content="All-in-one UPI toolkit: dynamic QR codes, counter standees, deep link compiler, web payment buttons, GST invoice builder with QR, multi-language voice soundbox, link parser, and bulk batch generation.">
   <meta name="theme-color" content="#070A12">
   <link rel="icon" type="image/svg+xml" href="assets/upi-studio-logo.svg">
   <link rel="apple-touch-icon" href="assets/upi-studio-logo.svg">
   
-  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- QRCode.js Engine -->
+  <!-- CDNs for QR Code, Barcode, and PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,19 +32,20 @@
     <div class="nav-shell">
       <div class="brand-lockup">
         <div class="brand-badge-shell">
-          <img src="assets/upi-studio-logo.svg" alt="UPI Studio Logo" class="brand-logo-img" width="34" height="34">
+          <img src="assets/upi-studio-logo.svg" alt="UPI Studio Logo" class="brand-logo-img" width="36" height="36">
         </div>
         <div class="brand-text">
           <div class="brand-title-row">
             <span class="brand-title">UPI Studio</span>
-            <span class="spec-pill">NPCI v2.0</span>
+            <span class="spec-pill">Pro v3.0</span>
           </div>
-          <span class="brand-subline">Payment Link &amp; QR Workbench</span>
+          <span class="brand-subline">All-in-One NPCI Toolkit &bull; Zero Gateway Commission</span>
         </div>
       </div>
 
-      <nav class="nav-segment-control" role="tablist">
-        <button class="segment-tab active" data-tab="tab-qr" role="tab" aria-selected="true">
+      <!-- Feature Module Tabs -->
+      <nav class="nav-segment-control" role="tablist" id="mainTabList">
+        <button class="segment-tab active" data-tab="tab-qr" role="tab" aria-selected="true" id="tabNavQR">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
           <span>Standee &amp; QR</span>
         </button>
@@ -50,11 +55,32 @@
         </button>
         <button class="segment-tab" data-tab="tab-button" role="tab" aria-selected="false">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-          <span>HTML Embed</span>
+          <span>HTML Button</span>
+        </button>
+        <button class="segment-tab highlight-pill" data-tab="tab-invoice" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Invoice Builder</span>
+        </button>
+        <button class="segment-tab highlight-pill" data-tab="tab-soundbox" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span>Voice Soundbox</span>
+        </button>
+        <button class="segment-tab" data-tab="tab-batch" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <span>Batch / Bulk</span>
+        </button>
+        <button class="segment-tab" data-tab="tab-parser" role="tab" aria-selected="false">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>URL Parser</span>
         </button>
       </nav>
 
       <div class="nav-actions">
+        <!-- Presets Load/Save -->
+        <button id="btnQuickShare" class="icon-control-btn" title="Share Config URL">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+        <!-- Theme Toggle -->
         <button id="themeToggle" class="icon-control-btn" title="Toggle Theme (Light / Dark)">
           <svg class="sun-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           <svg class="moon-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -64,17 +90,24 @@
   </header>
 
   <main class="workbench-viewport">
-    <!-- Workbench Grid -->
-    <div class="workbench-layout">
+    <!-- Top Global Quick Stats / Banner -->
+    <div class="stats-ticker-bar">
+      <div class="ticker-item"><span class="ticker-dot green"></span> Direct Peer-to-Peer / P2M (0% Gateway Fee)</div>
+      <div class="ticker-item">&bull; Universal Support: Google Pay, PhonePe, Paytm, Cred, BHIM, Navi, Banks</div>
+      <div class="ticker-item">&bull; 100% Client-Side Encryption &amp; Generation</div>
+    </div>
+
+    <!-- MAIN VIEW 1: DUAL COCKPIT (QR, INTENT, BUTTON) -->
+    <div id="view-primary" class="workbench-layout">
       <!-- Left Config Cockpit -->
       <section class="workbench-card config-panel" aria-labelledby="cfg-title">
         <div class="panel-headline">
           <div class="headline-pill">
             <span class="pulse-dot"></span>
-            <span>Real-time NPCI Link Compiler</span>
+            <span>Live NPCI Protocol Compiler</span>
           </div>
-          <h2 id="cfg-title" class="headline-title">Payment Parameters</h2>
-          <p class="headline-desc">Configure recipient VPA, transaction amount, reference IDs, and QR styling.</p>
+          <h2 id="cfg-title" class="headline-title">Payment Configuration</h2>
+          <p class="headline-desc">Set payee VPA, amount, notes, standee design, and advanced banking parameters.</p>
         </div>
 
         <form id="upiForm" onsubmit="event.preventDefault();" class="params-form">
@@ -98,6 +131,8 @@
                 <option value="axl">PhonePe (Axis)</option>
                 <option value="paytm">Paytm</option>
                 <option value="upi">BHIM UPI</option>
+                <option value="naviaxis">Navi UPI</option>
+                <option value="cred">Cred UPI</option>
                 <option value="barodampay">Bank of Baroda</option>
                 <option value="idfcbank">IDFC First</option>
                 <option value="postbank">IPPB</option>
@@ -111,6 +146,7 @@
               <button type="button" class="handle-chip" data-handle="ybl">@ybl</button>
               <button type="button" class="handle-chip" data-handle="paytm">@paytm</button>
               <button type="button" class="handle-chip" data-handle="upi">@upi</button>
+              <button type="button" class="handle-chip" data-handle="cred">@cred</button>
             </div>
           </div>
 
@@ -120,20 +156,28 @@
               <label for="payeeName">Payee / Merchant Name <span class="required-star">*</span></label>
               <span class="spec-param-badge">pn</span>
             </div>
-            <input type="text" id="payeeName" placeholder="e.g. Acme Studio or John Doe" value="Acme Store" required>
-            <span class="field-hint">Displayed at the top of payer's approval screen.</span>
+            <input type="text" id="payeeName" placeholder="e.g. Acme Tech Store or John Doe" value="Acme Store" required>
+            <span class="field-hint">Displayed prominently at the top of the payer's mobile screen.</span>
           </div>
 
           <!-- Amount & Currency -->
           <div class="field-row">
             <div class="field-item flex-2">
               <div class="field-label-row">
-                <label for="amount">Amount</label>
+                <label for="amount">Amount (₹)</label>
                 <span class="spec-param-badge">am</span>
               </div>
               <div class="input-adornment-wrapper">
                 <span class="input-currency-symbol">₹</span>
                 <input type="number" id="amount" placeholder="0.00 (blank = payer enters)" step="0.01" min="1" max="100000" value="299.00">
+              </div>
+              <div class="quick-amount-tags">
+                <button type="button" class="amt-chip" data-amt="99">₹99</button>
+                <button type="button" class="amt-chip" data-amt="299">₹299</button>
+                <button type="button" class="amt-chip" data-amt="499">₹499</button>
+                <button type="button" class="amt-chip" data-amt="999">₹999</button>
+                <button type="button" class="amt-chip" data-amt="1999">₹1,999</button>
+                <button type="button" class="amt-chip" data-amt="">Clear</button>
               </div>
             </div>
 
@@ -173,20 +217,21 @@
             <summary class="accordion-summary">
               <div class="summary-left">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                <span>QR Appearance &amp; Standee Themes</span>
+                <span>Standee Styling &amp; Visual Customization</span>
               </div>
               <svg class="summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
             
             <div class="accordion-body">
-              <!-- Standee Theme Selector -->
+              <!-- Standee Card Theme Preset -->
               <div class="field-item">
-                <label for="standeeThemeSelect">Merchant Standee Card Preset</label>
+                <label for="standeeThemeSelect">Merchant Counter Card Design Theme</label>
                 <select id="standeeThemeSelect">
-                  <option value="minimal-clean" selected>Clean Minimal (Crisp Counter Card)</option>
-                  <option value="upi-emerald">Official Emerald &amp; Navy</option>
+                  <option value="minimal-clean" selected>Clean Minimal (Modern Retail White)</option>
+                  <option value="upi-emerald">Official NPCI Emerald &amp; Navy</option>
                   <option value="gradient-aurora">Aurora Gradient (Teal / Blue / Violet)</option>
-                  <option value="sleek-midnight">Midnight Obsidian (Dark Standee)</option>
+                  <option value="sleek-midnight">Midnight Obsidian (Dark Luxury)</option>
+                  <option value="warm-amber">Boutique Amber &amp; Gold</option>
                 </select>
               </div>
 
@@ -216,8 +261,9 @@
                   <label for="qrCenterLogo">Center Emblem</label>
                   <select id="qrCenterLogo">
                     <option value="upi" selected>Official UPI Badge</option>
-                    <option value="lightning">Lightning Bolt</option>
+                    <option value="lightning">Lightning Bolt (⚡)</option>
                     <option value="rupee">Indian Rupee (₹)</option>
+                    <option value="gpay">Google Pay (G)</option>
                     <option value="none">None (Clean Matrix)</option>
                   </select>
                 </div>
@@ -261,7 +307,7 @@
             <summary class="accordion-summary">
               <div class="summary-left">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                <span>Advanced Protocol Parameters (MCC, Mode, Sign, MAM)</span>
+                <span>Advanced Banking Parameters (MCC, Mode, Sign, MAM, URL)</span>
               </div>
               <svg class="summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
@@ -274,13 +320,15 @@
                     <span class="spec-param-badge">mc</span>
                   </div>
                   <input type="text" id="mccCode" placeholder="5411" maxlength="4">
+                  <span class="field-hint">4-digit merchant category code</span>
                 </div>
                 <div class="field-item flex-1">
                   <div class="field-label-row">
-                    <label for="minAmount">Min Amount</label>
+                    <label for="minAmount">Min Amount (MAM)</label>
                     <span class="spec-param-badge">mam</span>
                   </div>
                   <input type="number" id="minAmount" placeholder="50.00" step="0.01">
+                  <span class="field-hint">Partial payment minimum</span>
                 </div>
               </div>
 
@@ -299,7 +347,7 @@
                 </div>
                 <div class="field-item flex-1">
                   <div class="field-label-row">
-                    <label for="callbackUrl">Callback URL</label>
+                    <label for="callbackUrl">Callback / Invoice URL</label>
                     <span class="spec-param-badge">url</span>
                   </div>
                   <input type="url" id="callbackUrl" placeholder="https://store.com/receipt">
@@ -324,7 +372,7 @@
         <div class="tab-content active" id="tab-qr" role="tabpanel">
           <div class="stage-header">
             <span class="stage-tag">Physical Counter Standee</span>
-            <div class="scale-info">Vector Scaled &bull; Ready to Scan</div>
+            <div class="scale-info">Print-Ready Vector Scaling</div>
           </div>
 
           <!-- Merchant Physical Standee Preview -->
@@ -357,7 +405,7 @@
                 <span class="pill-label">Amount Payable</span>
                 <strong id="displayAmount" class="pill-value">₹299.00</strong>
               </div>
-              <p class="standee-disclaimer">Scan with Google Pay, PhonePe, Paytm, or BHIM</p>
+              <p class="standee-disclaimer">Scan with Google Pay, PhonePe, Paytm, Cred, or BHIM</p>
             </div>
           </div>
 
@@ -366,6 +414,10 @@
             <button class="tactile-btn btn-primary" id="btnDownloadPNG">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span>Download Standee PNG</span>
+            </button>
+            <button class="tactile-btn btn-secondary" id="btnDownloadSVG">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Export Vector SVG</span>
             </button>
             <button class="tactile-btn btn-secondary" id="btnDownloadQROnly">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -442,6 +494,20 @@
             </div>
           </div>
 
+          <!-- Quick Share Links for SMS / WhatsApp -->
+          <div class="quick-channels-bar">
+            <span class="channels-label">1-Click Share:</span>
+            <button type="button" class="channel-btn whatsapp" id="btnShareWhatsApp">
+              <span>💬 WhatsApp Link</span>
+            </button>
+            <button type="button" class="channel-btn sms" id="btnShareSMS">
+              <span>📱 SMS Link</span>
+            </button>
+            <button type="button" class="channel-btn copy-short" id="btnCopyShortLink">
+              <span>🔗 Copy Web Link</span>
+            </button>
+          </div>
+
           <!-- Parameter Breakdown Table -->
           <div class="param-breakdown-section">
             <h4 class="section-title">Active Protocol Parameters</h4>
@@ -485,6 +551,7 @@
                 <option value="sleek-dark">Dark Minimalist</option>
                 <option value="phonepe-purple">PhonePe Vibrant Purple</option>
                 <option value="emerald-green">Emerald Success</option>
+                <option value="luxury-black">Obsidian High-Contrast</option>
               </select>
             </div>
             <div class="field-item">
@@ -531,6 +598,341 @@
       </section>
     </div>
 
+    <!-- MAIN VIEW 2: GST INVOICE & RECEIPT GENERATOR -->
+    <div id="view-invoice" class="fullwidth-module" style="display: none;">
+      <div class="module-header-row">
+        <div>
+          <span class="module-pill">B2B &bull; B2C &bull; Freelancer</span>
+          <h2>Professional GST Bill &amp; Scannable Invoice Maker</h2>
+          <p class="module-desc">Generate print-ready bills with dynamic UPI QR code, itemized taxation, barcode, and 1-click PDF download.</p>
+        </div>
+        <div class="module-header-actions">
+          <button class="tactile-btn btn-secondary" id="btnResetInvoice">Reset Form</button>
+          <button class="tactile-btn btn-primary" id="btnDownloadInvoicePDF">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Download Invoice PDF</span>
+          </button>
+          <button class="tactile-btn btn-secondary" id="btnPrintInvoice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/></svg>
+            <span>Print Invoice</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="invoice-workbench-grid">
+        <!-- Invoice Input Configuration -->
+        <div class="workbench-card invoice-config-card">
+          <h3>Invoice Details</h3>
+          <div class="field-row">
+            <div class="field-item flex-1">
+              <label>Invoice Number</label>
+              <input type="text" id="invNumber" value="INV-2026-001">
+            </div>
+            <div class="field-item flex-1">
+              <label>Invoice Date</label>
+              <input type="date" id="invDate">
+            </div>
+            <div class="field-item flex-1">
+              <label>Due Date</label>
+              <input type="date" id="invDueDate">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-item flex-1">
+              <label>Seller / Business Name</label>
+              <input type="text" id="invSellerName" value="Acme Digital Solutions">
+            </div>
+            <div class="field-item flex-1">
+              <label>Seller GSTIN / PAN</label>
+              <input type="text" id="invSellerGST" value="27AAAAA0000A1Z5">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-item flex-1">
+              <label>Billed To (Client Name)</label>
+              <input type="text" id="invClientName" value="TechCorp India Pvt Ltd">
+            </div>
+            <div class="field-item flex-1">
+              <label>Client GSTIN / Address</label>
+              <input type="text" id="invClientGST" value="Mumbai, Maharashtra">
+            </div>
+          </div>
+
+          <!-- Line Items Table -->
+          <div class="line-items-manager">
+            <div class="manager-title-row">
+              <h4>Line Items</h4>
+              <button type="button" class="btn-subtle" id="btnAddLineItem">+ Add Item</button>
+            </div>
+            <div class="table-frame">
+              <table class="line-items-table" id="lineItemsTable">
+                <thead>
+                  <tr>
+                    <th>Item Description</th>
+                    <th width="70">Qty</th>
+                    <th width="100">Rate (₹)</th>
+                    <th width="80">GST %</th>
+                    <th width="90">Total</th>
+                    <th width="40"></th>
+                  </tr>
+                </thead>
+                <tbody id="lineItemsBody">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="field-item" style="margin-top: 14px;">
+            <label>Payment Terms &amp; Notes</label>
+            <input type="text" id="invNotes" value="Payment due within 7 days. Scan UPI QR code for instant zero-fee settlement.">
+          </div>
+        </div>
+
+        <!-- Live Printable Invoice Sheet Preview -->
+        <div class="invoice-preview-container">
+          <div class="printable-invoice-sheet" id="invoiceSheet">
+            <div class="inv-head">
+              <div class="inv-brand">
+                <h2 id="prevSellerName">Acme Digital Solutions</h2>
+                <p id="prevSellerGST">GSTIN: 27AAAAA0000A1Z5</p>
+                <p>Tax Invoice / Bill of Supply</p>
+              </div>
+              <div class="inv-meta">
+                <h1 class="inv-badge">TAX INVOICE</h1>
+                <p><strong>Invoice #:</strong> <span id="prevInvNumber">INV-2026-001</span></p>
+                <p><strong>Date:</strong> <span id="prevInvDate">23-Oct-2026</span></p>
+                <p><strong>Due Date:</strong> <span id="prevInvDueDate">30-Oct-2026</span></p>
+              </div>
+            </div>
+
+            <div class="inv-billing-row">
+              <div class="inv-bill-to">
+                <span class="caption">Billed To:</span>
+                <strong id="prevClientName">TechCorp India Pvt Ltd</strong>
+                <p id="prevClientGST">Mumbai, Maharashtra</p>
+              </div>
+              <div class="inv-barcode-zone">
+                <svg id="invBarcodeSvg"></svg>
+              </div>
+            </div>
+
+            <table class="inv-items-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>GST</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="prevItemsBody">
+                <!-- Dynamically updated -->
+              </tbody>
+            </table>
+
+            <div class="inv-summary-section">
+              <!-- UPI Payment Box inside Invoice -->
+              <div class="inv-upi-box">
+                <div class="inv-upi-qr-frame">
+                  <div id="invoiceQrcode"></div>
+                </div>
+                <div class="inv-upi-text">
+                  <strong>Scan to Pay via UPI</strong>
+                  <p>VPA: <span id="prevInvVpa">merchant@okaxis</span></p>
+                  <p>Order Ref: <span id="prevInvRef">INV-2026-001</span></p>
+                  <span class="inv-instant-badge">Instant 0% Fee Settlement</span>
+                </div>
+              </div>
+
+              <!-- Calculation Totals -->
+              <div class="inv-totals-box">
+                <div class="total-row"><span>Subtotal:</span> <strong id="prevSubtotal">₹0.00</strong></div>
+                <div class="total-row"><span>Total GST (CGST+SGST):</span> <strong id="prevTotalGST">₹0.00</strong></div>
+                <div class="total-row grand-total"><span>Grand Total:</span> <strong id="prevGrandTotal">₹0.00</strong></div>
+              </div>
+            </div>
+
+            <div class="inv-footer-notes">
+              <p><strong>Terms:</strong> <span id="prevNotes">Payment due within 7 days. Scan UPI QR code for instant zero-fee settlement.</span></p>
+              <p class="computer-generated">This is a computer-generated tax invoice. Authorized Signatory: Acme Digital Solutions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW 3: SOFTWARE VOICE SOUNDBOX -->
+    <div id="view-soundbox" class="fullwidth-module" style="display: none;">
+      <div class="module-header-row">
+        <div>
+          <span class="module-pill">Audio Proof-of-Payment &bull; Multilingual</span>
+          <h2>Virtual Software Soundbox Simulator</h2>
+          <p class="module-desc">Turn any counter PC, tablet, or phone into an instant audio soundbox. Speaks payment confirmations in 8+ Indian regional languages.</p>
+        </div>
+      </div>
+
+      <div class="soundbox-grid">
+        <!-- Physical Virtual Soundbox Device UI -->
+        <div class="workbench-card soundbox-device-card">
+          <div class="soundbox-hardware-mock">
+            <div class="speaker-grille">
+              <div class="dot-grille"></div>
+            </div>
+            <div class="soundbox-screen">
+              <span class="device-label">PAYMENT SOUNDBOX PRO</span>
+              <div class="device-amount" id="soundboxLastAmount">₹ 299.00</div>
+              <div class="device-status" id="soundboxStatusText">● Ready to Receive</div>
+            </div>
+            <div class="soundbox-controls-row">
+              <button class="soundbox-play-btn" id="btnTestSoundboxVoice">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Speak Payment Voice Alert</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Soundbox Settings & Trigger Panel -->
+        <div class="workbench-card soundbox-settings-card">
+          <h3>Soundbox Settings &amp; Audio Broadcast</h3>
+          
+          <div class="field-item">
+            <label for="soundboxVoiceLang">Voice Announcement Language</label>
+            <select id="soundboxVoiceLang">
+              <option value="en-IN" selected>English (India) — "Received 299 rupees on UPI"</option>
+              <option value="hi-IN">Hindi (हिंदी) — "UPI पर 299 रुपये प्राप्त हुए"</option>
+              <option value="ta-IN">Tamil (தமிழ்) — "UPI-ல் 299 ரூபாய் பெறப்பட்டது"</option>
+              <option value="te-IN">Telugu (తెలుగు) — "UPI లో 299 రూపాయలు స్వీకరించబడ్డాయి"</option>
+              <option value="kn-IN">Kannada (ಕನ್ನಡ) — "UPI ನಲ್ಲಿ 299 ರೂಪಾಯಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ"</option>
+              <option value="bn-IN">Bengali (বাংলা) — "UPI-তে 299 টাকা পাওয়া গেছে"</option>
+              <option value="mr-IN">Marathi (मराठी) — "UPI वर 299 रुपये प्राप्त झाले"</option>
+              <option value="gu-IN">Gujarati (ગુજરાતી) — "UPI પર 299 રૂપિયા મળ્યા"</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field-item flex-1">
+              <label for="soundboxAmountInput">Simulated Payment Amount (₹)</label>
+              <input type="number" id="soundboxAmountInput" value="299.00" step="1">
+            </div>
+            <div class="field-item flex-1">
+              <label for="soundboxCustomerInput">Payer Name (Optional)</label>
+              <input type="text" id="soundboxCustomerInput" placeholder="Rahul Sharma" value="Rahul Sharma">
+            </div>
+          </div>
+
+          <div class="soundbox-options-row">
+            <label class="tactile-checkbox">
+              <input type="checkbox" id="soundboxPlayChime" checked>
+              <span>Play Cash Register / Payment Chime before Voice</span>
+            </label>
+          </div>
+
+          <!-- Transaction Audio Log -->
+          <div class="soundbox-log-section">
+            <div class="log-title-row">
+              <h4>Audio Broadcast History</h4>
+              <button type="button" class="btn-subtle" id="btnClearSoundboxLog">Clear History</button>
+            </div>
+            <div class="soundbox-log-list" id="soundboxLogList">
+              <div class="log-empty">No transactions voiced yet. Click "Speak Payment Voice Alert" to broadcast.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW 4: BATCH / BULK QR GENERATION -->
+    <div id="view-batch" class="fullwidth-module" style="display: none;">
+      <div class="module-header-row">
+        <div>
+          <span class="module-pill">Bulk Processing &bull; Multi-Branch &bull; Fleet</span>
+          <h2>Bulk UPI QR Generator &amp; Multi-VPA Generator</h2>
+          <p class="module-desc">Generate dozens or hundreds of custom dynamic UPI QR codes simultaneously for tables, branches, staff, or catalog items. Download individual PNGs or print all at once.</p>
+        </div>
+        <div class="module-header-actions">
+          <button class="tactile-btn btn-secondary" id="btnLoadBatchSample">Load Sample Data</button>
+          <button class="tactile-btn btn-primary" id="btnBatchPrintAll">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/></svg>
+            <span>Print All Cards</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="batch-workbench-grid">
+        <div class="workbench-card batch-input-card">
+          <h3>CSV / Text Table Input</h3>
+          <p class="headline-desc">Format: <code>VPA, Name, Amount, Reference, Note</code> (one item per line)</p>
+          <textarea id="batchInputArea" rows="8" class="code-textarea" placeholder="store1@okaxis, Downtown Branch, 150.00, TBL-01, Table 1
+store2@okaxis, Midtown Branch, 250.00, TBL-02, Table 2
+delivery@ybl, Express Rider, 499.00, ORD-551, Food Order"></textarea>
+          
+          <button class="tactile-btn btn-primary" id="btnProcessBatch" style="width: 100%; margin-top: 10px;">
+            <span>Generate All QR Codes</span>
+          </button>
+        </div>
+
+        <div class="workbench-card batch-output-card">
+          <div class="batch-results-header">
+            <h3>Generated QR Cards (<span id="batchCountBadge">0</span>)</h3>
+            <span class="field-hint">All cards formatted with NPCI compliance</span>
+          </div>
+          <div class="batch-cards-container" id="batchCardsContainer">
+            <div class="log-empty">Enter records on the left and click "Generate All QR Codes" to view batch standees.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW 5: DEEP LINK PARSER & VERIFIER -->
+    <div id="view-parser" class="fullwidth-module" style="display: none;">
+      <div class="module-header-row">
+        <div>
+          <span class="module-pill">Debug &bull; Verification &bull; Inspection</span>
+          <h2>UPI Deep Link Inspector &amp; QR Decoder</h2>
+          <p class="module-desc">Paste any <code>upi://pay</code> link or QR code payload to validate compliance against NPCI v2.0 specifications, test amount constraints, and inspect digital signatures.</p>
+        </div>
+      </div>
+
+      <div class="parser-grid">
+        <div class="workbench-card parser-input-card">
+          <h3>Paste Link to Inspect</h3>
+          <div class="field-item">
+            <input type="text" id="parserInputText" placeholder="upi://pay?pa=merchant@axisbank&pn=Tech%20Store&am=499.00&cu=INR&tr=ORD1042" value="upi://pay?pa=store@okaxis&pn=Acme%20Store&am=499.00&cu=INR&tr=ORD-9912&tn=Subscription">
+          </div>
+          <button class="tactile-btn btn-primary" id="btnExecuteParse" style="width: 100%;">
+            <span>Inspect &amp; Verify Link</span>
+          </button>
+        </div>
+
+        <div class="workbench-card parser-result-card">
+          <h3>NPCI Compliance Inspection Report</h3>
+          <div id="parserVerdictBadge" class="verdict-badge valid">✔ Valid NPCI Format</div>
+          <div class="table-frame" style="margin-top: 12px;">
+            <table class="spec-table">
+              <thead>
+                <tr>
+                  <th>Param</th>
+                  <th>NPCI Spec Meaning</th>
+                  <th>Extracted Value</th>
+                  <th>Compliance Status</th>
+                </tr>
+              </thead>
+              <tbody id="parserReportTable">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Technical Specification Architecture Card -->
     <section class="workbench-card guide-panel">
       <div class="guide-header">
@@ -538,19 +940,19 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         </div>
         <div>
-          <h3>NPCI Unified Payments Interface Protocol Anatomy</h3>
-          <p class="guide-subline">How QR codes and Intent URIs decode across PSP apps.</p>
+          <h3>NPCI Unified Payments Interface Protocol Architecture</h3>
+          <p class="guide-subline">How QR codes, Intent URIs, invoices, and payment audio broadcast across the UPI ecosystem.</p>
         </div>
       </div>
 
       <div class="guide-columns">
         <div class="guide-col">
-          <h4>URI Structure</h4>
-          <p>Every UPI checkout begins with the custom scheme <code>upi://pay</code> followed by query parameters. Mobile operating systems (Android Intent Filters &amp; iOS Universal Links) parse this scheme and pass the dictionary of key-value pairs to verified payment apps (GPay, PhonePe, Paytm, BHIM).</p>
+          <h4>URI Structure &amp; Parameter Keys</h4>
+          <p>Every UPI transaction uses <code>upi://pay?</code> followed by RFC-compliant query parameters. Key parameters include: <code>pa</code> (Payee VPA), <code>pn</code> (Payee Name), <code>am</code> (Amount in INR), <code>cu</code> (Currency code, must be INR), <code>tr</code> (Transaction Reference ID), <code>tn</code> (Note/Memo), <code>mc</code> (Merchant Category Code), <code>mam</code> (Minimum Amount Allowed), and <code>sign</code> (Base64 PKI Signature).</p>
         </div>
         <div class="guide-col">
-          <h4>Desktop vs Mobile Handshake</h4>
-          <p>Because desktop browsers lack native UPI hardware token storage, attempting to launch <code>upi://</code> directly will trigger an unhandled protocol error. The recommended merchant pattern is displaying the dynamic QR standee for smartphone camera scans.</p>
+          <h4>Zero Payment Gateway Commissions</h4>
+          <p>By routing directly through the NPCI peer-to-peer (P2P) or peer-to-merchant (P2M) deep link protocol, funds travel directly from payer bank account to payee bank account without middleman gateways deducting 2% to 3% platform fees.</p>
         </div>
       </div>
     </section>
@@ -562,8 +964,8 @@
   <footer class="workbench-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="assets/upi-studio-logo.svg" alt="UPI Studio" width="20" height="20">
-        <span>UPI Studio Workbench &bull; NPCI Spec Compliant</span>
+        <img src="assets/upi-studio-logo.svg" alt="UPI Studio" width="22" height="22">
+        <span>UPI Studio Workbench Pro &bull; Fully Feature-Packed &bull; NPCI Spec Compliant</span>
       </div>
       <p class="footer-privacy">Client-side rendering only. Zero analytics, telemetry, or remote transmission of payment VPAs.</p>
     </div>

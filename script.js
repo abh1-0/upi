@@ -1,10 +1,19 @@
 /**
- * UPI Studio — Engine for NPCI-Compliant UPI Deep Link, QR & Button Generation
- * Features: Multi-preset standee theming, quiet-zone geometry, center emblem switching, error correction levels.
+ * UPI Studio Pro v3.0 — Full Feature-Packed Engine
+ * Capabilities:
+ *  1. Dynamic Standee & Matrix QR (SVG & PNG retina download)
+ *  2. Full NPCI Deep Link compiler & 1-click App testers
+ *  3. Copyable HTML/CSS Embed Buttons + Modal Script
+ *  4. GST Tax Invoice & Bill Maker with Scannable QR & jsPDF export
+ *  5. Web Speech API Virtual Soundbox (Multilingual Indian Voice Broadcasts)
+ *  6. Bulk / Batch CSV UPI QR Generator with Multi-Card Printing
+ *  7. Deep Link Parser & NPCI Compliance Verifier
+ *  8. URL Hash State Sharer
  */
 
-// Global State
-const upiState = {
+// Application State
+const state = {
+  // Primary Cockpit
   username: 'merchant',
   handle: 'okaxis',
   payeeName: 'Acme Store',
@@ -17,8 +26,8 @@ const upiState = {
   mode: '00',
   url: '',
   sign: '',
-  
-  // Customization
+
+  // Standee Customization
   standeeTheme: 'minimal-clean',
   qrDark: '#0f172a',
   qrLight: '#ffffff',
@@ -27,18 +36,34 @@ const upiState = {
   qrSize: 260,
   qrQuietZone: 'standard',
 
-  // Button
+  // Button Customization
   btnTheme: 'modern-gradient',
   btnLabel: 'Pay with UPI',
   btnShowAmount: true,
   btnShowIcon: true,
+
+  // Invoice Items
+  invoiceItems: [
+    { desc: 'Web Application Development', qty: 1, rate: 25000, gst: 18 },
+    { desc: 'Cloud Server Infrastructure Setup', qty: 1, rate: 5000, gst: 18 }
+  ]
 };
 
-let qrcodeInstance = null;
+// Global QR Instances
+let mainQrInstance = null;
+let invoiceQrInstance = null;
 
-// DOM Cache
+// Cache DOM Nodes
 const dom = {
-  // Inputs
+  // Tab Elements
+  mainTabList: document.getElementById('mainTabList'),
+  viewPrimary: document.getElementById('view-primary'),
+  viewInvoice: document.getElementById('view-invoice'),
+  viewSoundbox: document.getElementById('view-soundbox'),
+  viewBatch: document.getElementById('view-batch'),
+  viewParser: document.getElementById('view-parser'),
+
+  // Cockpit Inputs
   username: document.getElementById('upiUsername'),
   handle: document.getElementById('upiHandleCustom'),
   payeeName: document.getElementById('payeeName'),
@@ -53,7 +78,7 @@ const dom = {
   sign: document.getElementById('digitalSign'),
   btnGenRef: document.getElementById('btnGenRef'),
 
-  // Customization Inputs
+  // QR Customization
   standeeTheme: document.getElementById('standeeThemeSelect'),
   qrDark: document.getElementById('qrDarkColor'),
   qrLight: document.getElementById('qrLightColor'),
@@ -73,8 +98,9 @@ const dom = {
   qrCenterEmblem: document.getElementById('qrCenterEmblem'),
   emblemContent: document.getElementById('emblemContent'),
 
-  // Standee Action Buttons
+  // Standee Actions
   btnDownloadPNG: document.getElementById('btnDownloadPNG'),
+  btnDownloadSVG: document.getElementById('btnDownloadSVG'),
   btnDownloadQROnly: document.getElementById('btnDownloadQROnly'),
   btnPrintQR: document.getElementById('btnPrintQR'),
 
@@ -85,6 +111,9 @@ const dom = {
   btnTriggerGPay: document.getElementById('btnTriggerGPay'),
   btnTriggerPhonePe: document.getElementById('btnTriggerPhonePe'),
   btnTriggerPaytm: document.getElementById('btnTriggerPaytm'),
+  btnShareWhatsApp: document.getElementById('btnShareWhatsApp'),
+  btnShareSMS: document.getElementById('btnShareSMS'),
+  btnCopyShortLink: document.getElementById('btnCopyShortLink'),
   paramsTableBody: document.getElementById('paramsTableBody'),
 
   // Button Tab
@@ -98,13 +127,73 @@ const dom = {
   jsUniversalSnippetCode: document.getElementById('jsUniversalSnippetCode'),
   btnCopyUniversalScript: document.getElementById('btnCopyUniversalScript'),
 
-  // General Controls
+  // Invoice Inputs
+  invNumber: document.getElementById('invNumber'),
+  invDate: document.getElementById('invDate'),
+  invDueDate: document.getElementById('invDueDate'),
+  invSellerName: document.getElementById('invSellerName'),
+  invSellerGST: document.getElementById('invSellerGST'),
+  invClientName: document.getElementById('invClientName'),
+  invClientGST: document.getElementById('invClientGST'),
+  invNotes: document.getElementById('invNotes'),
+  lineItemsBody: document.getElementById('lineItemsBody'),
+  btnAddLineItem: document.getElementById('btnAddLineItem'),
+  btnResetInvoice: document.getElementById('btnResetInvoice'),
+  btnDownloadInvoicePDF: document.getElementById('btnDownloadInvoicePDF'),
+  btnPrintInvoice: document.getElementById('btnPrintInvoice'),
+  invoiceSheet: document.getElementById('invoiceSheet'),
+  invoiceQrcode: document.getElementById('invoiceQrcode'),
+  invBarcodeSvg: document.getElementById('invBarcodeSvg'),
+
+  // Invoice Preview
+  prevSellerName: document.getElementById('prevSellerName'),
+  prevSellerGST: document.getElementById('prevSellerGST'),
+  prevInvNumber: document.getElementById('prevInvNumber'),
+  prevInvDate: document.getElementById('prevInvDate'),
+  prevInvDueDate: document.getElementById('prevInvDueDate'),
+  prevClientName: document.getElementById('prevClientName'),
+  prevClientGST: document.getElementById('prevClientGST'),
+  prevItemsBody: document.getElementById('prevItemsBody'),
+  prevInvVpa: document.getElementById('prevInvVpa'),
+  prevInvRef: document.getElementById('prevInvRef'),
+  prevSubtotal: document.getElementById('prevSubtotal'),
+  prevTotalGST: document.getElementById('prevTotalGST'),
+  prevGrandTotal: document.getElementById('prevGrandTotal'),
+  prevNotes: document.getElementById('prevNotes'),
+
+  // Soundbox
+  soundboxVoiceLang: document.getElementById('soundboxVoiceLang'),
+  soundboxAmountInput: document.getElementById('soundboxAmountInput'),
+  soundboxCustomerInput: document.getElementById('soundboxCustomerInput'),
+  soundboxPlayChime: document.getElementById('soundboxPlayChime'),
+  btnTestSoundboxVoice: document.getElementById('btnTestSoundboxVoice'),
+  soundboxLastAmount: document.getElementById('soundboxLastAmount'),
+  soundboxStatusText: document.getElementById('soundboxStatusText'),
+  soundboxLogList: document.getElementById('soundboxLogList'),
+  btnClearSoundboxLog: document.getElementById('btnClearSoundboxLog'),
+
+  // Batch
+  batchInputArea: document.getElementById('batchInputArea'),
+  btnProcessBatch: document.getElementById('btnProcessBatch'),
+  btnLoadBatchSample: document.getElementById('btnLoadBatchSample'),
+  btnBatchPrintAll: document.getElementById('btnBatchPrintAll'),
+  batchCardsContainer: document.getElementById('batchCardsContainer'),
+  batchCountBadge: document.getElementById('batchCountBadge'),
+
+  // Parser
+  parserInputText: document.getElementById('parserInputText'),
+  btnExecuteParse: document.getElementById('btnExecuteParse'),
+  parserVerdictBadge: document.getElementById('parserVerdictBadge'),
+  parserReportTable: document.getElementById('parserReportTable'),
+
+  // Global Controls
+  btnQuickShare: document.getElementById('btnQuickShare'),
   themeToggle: document.getElementById('themeToggle'),
-  toast: document.getElementById('toast'),
+  toast: document.getElementById('toast')
 };
 
 /**
- * Builds Full UPI VPA
+ * Builds Full UPI Virtual Payment Address (VPA)
  */
 function getFullVpa() {
   const user = (dom.username.value || '').trim();
@@ -115,14 +204,14 @@ function getFullVpa() {
 }
 
 /**
- * Builds NPCI UPI URI
+ * Builds Standard NPCI URI
  */
-function buildUpiUri(customScheme = 'upi') {
+function buildUpiUri(customScheme = 'upi', customAmt = null, customRef = null, customNote = null) {
   const vpa = getFullVpa();
   const name = (dom.payeeName.value || '').trim();
-  const amt = (dom.amount.value || '').trim();
-  const ref = (dom.txRef.value || '').trim();
-  const note = (dom.txNote.value || '').trim();
+  const amt = customAmt !== null ? customAmt : (dom.amount.value || '').trim();
+  const ref = customRef !== null ? customRef : (dom.txRef.value || '').trim();
+  const note = customNote !== null ? customNote : (dom.txNote.value || '').trim();
   const mcc = (dom.mcc.value || '').trim();
   const mam = (dom.minAmount.value || '').trim();
   const mode = (dom.mode.value || '').trim();
@@ -159,7 +248,7 @@ function buildUpiUri(customScheme = 'upi') {
 }
 
 /**
- * Resolves QRCode.js CorrectLevel constant
+ * Resolves Error Correction Constant
  */
 function resolveEccLevel(levelKey) {
   switch (levelKey) {
@@ -172,7 +261,7 @@ function resolveEccLevel(levelKey) {
 }
 
 /**
- * Updates Standee Visual Theme
+ * Updates Standee Theme Class
  */
 function applyStandeeTheme(themeName) {
   dom.qrStand.className = 'standee-wrapper';
@@ -201,13 +290,17 @@ function updateCenterEmblem(emblemType) {
     dom.emblemContent.textContent = '₹';
     dom.emblemContent.style.background = '#0F172A';
     dom.emblemContent.style.color = '#FF9933';
+  } else if (emblemType === 'gpay') {
+    dom.emblemContent.textContent = 'G';
+    dom.emblemContent.style.background = '#4285F4';
+    dom.emblemContent.style.color = '#FFFFFF';
   }
 }
 
 /**
- * Renders the QR Canvas
+ * Renders Primary QR Code
  */
-function renderQr(uri) {
+function renderPrimaryQr(uri) {
   if (!dom.qrcodeContainer) return;
   dom.qrcodeContainer.innerHTML = '';
 
@@ -216,26 +309,25 @@ function renderQr(uri) {
   const light = dom.qrLight.value || '#ffffff';
   const ecc = resolveEccLevel(dom.qrEccLevel.value);
 
-  // Apply Quiet Zone padding class
+  // Apply Quiet Zone
   const quiet = dom.qrQuietZone.value;
   dom.standeeQrFrame.className = 'standee-qr-frame';
   dom.standeeQrFrame.classList.add(`quiet-${quiet}`);
 
-  // Create QR Code
-  qrcodeInstance = new QRCode(dom.qrcodeContainer, {
+  mainQrInstance = new QRCode(dom.qrcodeContainer, {
     text: uri,
     width: size,
     height: size,
     colorDark: dark,
     colorLight: light,
-    correctLevel: ecc,
+    correctLevel: ecc
   });
 
   updateCenterEmblem(dom.qrCenterLogo.value);
 }
 
 /**
- * Updates Breakdown Table
+ * Updates Parameter Breakdown Table
  */
 function updateParamsTable() {
   const vpa = getFullVpa();
@@ -264,16 +356,13 @@ function updateParamsTable() {
   ];
 
   dom.paramsTableBody.innerHTML = rows
-    .map(
-      (r) => `
-    <tr>
-      <td><code>${r.key}</code></td>
-      <td>${r.name} ${r.req ? '<span class="required-star">*</span>' : ''}</td>
-      <td><strong>${escapeHtml(r.val)}</strong></td>
-    </tr>
-  `
-    )
-    .join('');
+    .map((r) => `
+      <tr>
+        <td><code>${r.key}</code></td>
+        <td>${r.name} ${r.req ? '<span class="required-star">*</span>' : ''}</td>
+        <td><strong>${escapeHtml(r.val)}</strong></td>
+      </tr>
+    `).join('');
 }
 
 /**
@@ -326,6 +415,15 @@ function getButtonStyleConfig(theme) {
         badgeBg: 'rgba(255, 255, 255, 0.2)',
         badgeColor: '#FFFFFF',
       };
+    case 'luxury-black':
+      return {
+        bg: '#000000',
+        color: '#FFFFFF',
+        border: '1px solid #222222',
+        shadow: '0 6px 20px rgba(0, 0, 0, 0.7)',
+        badgeBg: '#222222',
+        badgeColor: '#00D26A',
+      };
     default:
       return {
         bg: '#0084FF',
@@ -339,7 +437,7 @@ function getButtonStyleConfig(theme) {
 }
 
 /**
- * Builds HTML Snippet
+ * Builds HTML Embed Snippet
  */
 function buildHtmlSnippet(uri) {
   const theme = dom.btnThemePreset.value;
@@ -358,7 +456,7 @@ function buildHtmlSnippet(uri) {
       ? `<span style="background:${styles.badgeBg};color:${styles.badgeColor};padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;">₹${parseFloat(amt).toFixed(2)}</span>`
       : '';
 
-  return `<!-- UPI Instant Button Start -->
+  return `<!-- UPI Zero-Fee Instant Button Start -->
 <a href="${uri}" 
    class="upi-pay-button" 
    style="display:inline-flex;align-items:center;justify-content:center;gap:10px;background:${styles.bg};color:${styles.color};border:${styles.border};padding:12px 24px;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;font-weight:700;text-decoration:none;box-shadow:${styles.shadow};transition:transform 0.15s cubic-bezier(0.16,1,0.3,1);cursor:pointer;"
@@ -369,11 +467,11 @@ function buildHtmlSnippet(uri) {
   <span>${escapeHtml(label)}</span>
   ${amountBadge}
 </a>
-<!-- UPI Instant Button End -->`;
+<!-- UPI Zero-Fee Instant Button End -->`;
 }
 
 /**
- * Builds Universal Script Snippet
+ * Builds Universal Modal Script Snippet
  */
 function buildUniversalScriptSnippet(uri) {
   const vpa = getFullVpa();
@@ -445,8 +543,8 @@ function refreshAll() {
   dom.btnTriggerPhonePe.href = buildUpiUri('phonepe');
   dom.btnTriggerPaytm.href = buildUpiUri('paytm');
 
-  // Render QR
-  renderQr(upiUri);
+  // Render Primary QR
+  renderPrimaryQr(upiUri);
 
   // Update Parameters Table
   updateParamsTable();
@@ -456,6 +554,9 @@ function refreshAll() {
   dom.htmlSnippetCode.textContent = htmlSnippet;
   dom.buttonLiveRenderContainer.innerHTML = htmlSnippet;
   dom.jsUniversalSnippetCode.textContent = buildUniversalScriptSnippet(upiUri);
+
+  // Update Invoice Live QR as well
+  updateInvoicePreview();
 }
 
 /**
@@ -490,7 +591,7 @@ function downloadStandeeCardPng() {
   ctx.strokeStyle = isDark ? '#1E293B' : '#E2E8F0';
   ctx.stroke();
 
-  // Theme top accent bar
+  // Top Accent Bar
   if (theme === 'upi-emerald') {
     ctx.fillStyle = '#00D26A';
     ctx.beginPath();
@@ -502,6 +603,11 @@ function downloadStandeeCardPng() {
     barGrad.addColorStop(0.5, '#0084FF');
     barGrad.addColorStop(1, '#8B5CF6');
     ctx.fillStyle = barGrad;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, width, 12 * scale, [28 * scale, 28 * scale, 0, 0]);
+    ctx.fill();
+  } else if (theme === 'warm-amber') {
+    ctx.fillStyle = '#F59E0B';
     ctx.beginPath();
     ctx.roundRect(0, 0, width, 12 * scale, [28 * scale, 28 * scale, 0, 0]);
     ctx.fill();
@@ -524,14 +630,13 @@ function downloadStandeeCardPng() {
   const qrX = (width - qrSize) / 2;
   const qrY = 120 * scale;
 
-  // Frame around QR
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
   ctx.roundRect(qrX - 12 * scale, qrY - 12 * scale, qrSize + 24 * scale, qrSize + 24 * scale, 14 * scale);
   ctx.fill();
   ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
 
-  // Center Emblem on exported image
+  // Center Emblem
   const emblemType = dom.qrCenterLogo.value;
   if (emblemType !== 'none') {
     const badgeW = 44 * scale;
@@ -553,7 +658,7 @@ function downloadStandeeCardPng() {
     ctx.fillText(emblemType === 'rupee' ? '₹' : (emblemType === 'lightning' ? '⚡' : 'UPI'), width / 2, qrY + qrSize / 2);
   }
 
-  // Footer Tag (Amount or Scan to Pay)
+  // Footer Tag
   const amt = dom.amount.value.trim();
   const footerY = 390 * scale;
 
@@ -579,7 +684,7 @@ function downloadStandeeCardPng() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#94A3B8';
   ctx.font = `600 ${10 * scale}px sans-serif`;
-  ctx.fillText('Works with Google Pay, PhonePe, Paytm & BHIM', width / 2, 468 * scale);
+  ctx.fillText('Works with Google Pay, PhonePe, Paytm, Cred & BHIM', width / 2, 468 * scale);
 
   // Trigger Download
   const link = document.createElement('a');
@@ -590,7 +695,42 @@ function downloadStandeeCardPng() {
 }
 
 /**
- * Downloads Raw QR Code PNG Only
+ * Downloads Vector SVG for Infinite Print Scaling
+ */
+function downloadStandeeSvg() {
+  const qrCanvas = dom.qrcodeContainer.querySelector('canvas');
+  if (!qrCanvas) return;
+  const qrDataUrl = qrCanvas.toDataURL('image/png');
+  const vpa = getFullVpa() || 'merchant@upi';
+  const name = dom.payeeName.value.trim() || 'Merchant';
+  const amt = dom.amount.value.trim();
+  const amtDisplay = amt && !isNaN(amt) && parseFloat(amt) > 0 ? `₹${parseFloat(amt).toFixed(2)}` : 'Any Amount';
+
+  const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" width="360" height="500">
+  <rect width="360" height="500" rx="28" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <rect width="360" height="12" rx="6" fill="#00D26A"/>
+  <text x="180" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="20" fill="#0F172A">${escapeHtml(name)}</text>
+  <text x="180" y="92" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-weight="500" font-size="12" fill="#64748B">${escapeHtml(vpa)}</text>
+  <rect x="68" y="108" width="224" height="224" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <image href="${qrDataUrl}" x="80" y="120" width="200" height="200"/>
+  <rect x="36" y="390" width="288" height="48" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="52" y="420" font-family="sans-serif" font-weight="600" font-size="12" fill="#64748B">Scan to Pay</text>
+  <text x="308" y="420" text-anchor="end" font-family="sans-serif" font-weight="800" font-size="16" fill="#0F172A">${amtDisplay}</text>
+  <text x="180" y="468" text-anchor="middle" font-family="sans-serif" font-weight="600" font-size="10" fill="#94A3B8">Works with Google Pay, PhonePe, Paytm, Cred &amp; BHIM</text>
+</svg>`;
+
+  const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = `UPI-Standee-${vpa.replace(/[@.]/g, '_')}.svg`;
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('Exported Vector SVG!');
+}
+
+/**
+ * Downloads Raw QR Code PNG
  */
 function downloadRawQrOnly() {
   const qrCanvas = dom.qrcodeContainer.querySelector('canvas');
@@ -603,7 +743,7 @@ function downloadRawQrOnly() {
 }
 
 /**
- * Order ID Generator
+ * Auto-generate Order ID
  */
 function generateOrderId() {
   const rand = Math.floor(1000 + Math.random() * 9000);
@@ -636,14 +776,12 @@ function copyToClipboard(text, message = 'Copied to clipboard!') {
 }
 
 /**
- * Toast Feedback
+ * Toast Helper
  */
 function showToast(msg) {
   dom.toast.textContent = msg;
   dom.toast.classList.add('show');
-  setTimeout(() => {
-    dom.toast.classList.remove('show');
-  }, 2200);
+  setTimeout(() => dom.toast.classList.remove('show'), 2200);
 }
 
 /**
@@ -659,85 +797,535 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Event Bindings
- */
-function bindEvents() {
-  const liveInputs = [
-    dom.username,
-    dom.handle,
-    dom.payeeName,
-    dom.amount,
-    dom.txRef,
-    dom.txNote,
-    dom.mcc,
-    dom.minAmount,
-    dom.mode,
-    dom.url,
-    dom.sign,
-    dom.standeeTheme,
-    dom.qrDark,
-    dom.qrLight,
-    dom.qrCenterLogo,
-    dom.qrEccLevel,
-    dom.qrSize,
-    dom.qrQuietZone,
-    dom.btnThemePreset,
-    dom.btnTextCustom,
-    dom.btnShowAmount,
-    dom.btnShowIcons,
+/* ==========================================================================
+   MODULE: GST INVOICE BUILDER
+   ========================================================================== */
+
+function initInvoiceDates() {
+  const today = new Date();
+  const nextWeek = new Date();
+  nextWeek.setDate(today.getDate() + 7);
+
+  dom.invDate.value = today.toISOString().split('T')[0];
+  dom.invDueDate.value = nextWeek.toISOString().split('T')[0];
+}
+
+function renderInvoiceItemsInput() {
+  dom.lineItemsBody.innerHTML = state.invoiceItems.map((item, idx) => {
+    const total = (item.qty * item.rate * (1 + item.gst / 100)).toFixed(2);
+    return `
+      <tr>
+        <td><input type="text" class="item-desc" data-idx="${idx}" value="${escapeHtml(item.desc)}"></td>
+        <td><input type="number" class="item-qty" data-idx="${idx}" value="${item.qty}" min="1" step="1"></td>
+        <td><input type="number" class="item-rate" data-idx="${idx}" value="${item.rate}" min="0" step="0.01"></td>
+        <td>
+          <select class="item-gst" data-idx="${idx}">
+            <option value="0" ${item.gst === 0 ? 'selected' : ''}>0%</option>
+            <option value="5" ${item.gst === 5 ? 'selected' : ''}>5%</option>
+            <option value="12" ${item.gst === 12 ? 'selected' : ''}>12%</option>
+            <option value="18" ${item.gst === 18 ? 'selected' : ''}>18%</option>
+            <option value="28" ${item.gst === 28 ? 'selected' : ''}>28%</option>
+          </select>
+        </td>
+        <td><strong>₹${total}</strong></td>
+        <td><button type="button" class="btn-delete-row" data-idx="${idx}">&times;</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateInvoicePreview() {
+  dom.prevSellerName.textContent = dom.invSellerName.value || 'Seller Name';
+  dom.prevSellerGST.textContent = `GSTIN: ${dom.invSellerGST.value || 'N/A'}`;
+  dom.prevInvNumber.textContent = dom.invNumber.value || 'INV-001';
+  dom.prevInvDate.textContent = dom.invDate.value || 'Today';
+  dom.prevInvDueDate.textContent = dom.invDueDate.value || 'Net 7';
+  dom.prevClientName.textContent = dom.invClientName.value || 'Client Name';
+  dom.prevClientGST.textContent = dom.invClientGST.value || 'Address';
+  dom.prevNotes.textContent = dom.invNotes.value || 'None';
+
+  const vpa = getFullVpa();
+  dom.prevInvVpa.textContent = vpa || 'merchant@okaxis';
+  dom.prevInvRef.textContent = dom.invNumber.value || 'INV-001';
+
+  let subtotal = 0;
+  let totalGST = 0;
+
+  dom.prevItemsBody.innerHTML = state.invoiceItems.map((item, idx) => {
+    const itemSub = item.qty * item.rate;
+    const itemTax = itemSub * (item.gst / 100);
+    const itemTotal = itemSub + itemTax;
+
+    subtotal += itemSub;
+    totalGST += itemTax;
+
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td><strong>${escapeHtml(item.desc)}</strong></td>
+        <td>${item.qty}</td>
+        <td>₹${item.rate.toFixed(2)}</td>
+        <td>${item.gst}%</td>
+        <td>₹${itemTotal.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const grandTotal = subtotal + totalGST;
+  dom.prevSubtotal.textContent = `₹${subtotal.toFixed(2)}`;
+  dom.prevTotalGST.textContent = `₹${totalGST.toFixed(2)}`;
+  dom.prevGrandTotal.textContent = `₹${grandTotal.toFixed(2)}`;
+
+  // Generate Barcode on Invoice
+  if (window.JsBarcode) {
+    try {
+      JsBarcode("#invBarcodeSvg", dom.invNumber.value || 'INV-001', {
+        format: "CODE128",
+        width: 1.5,
+        height: 36,
+        displayValue: true,
+        fontSize: 10
+      });
+    } catch (e) {}
+  }
+
+  // Generate UPI QR inside Invoice
+  if (dom.invoiceQrcode) {
+    dom.invoiceQrcode.innerHTML = '';
+    const invUpiUri = buildUpiUri('upi', grandTotal.toFixed(2), dom.invNumber.value, `Payment for ${dom.invNumber.value}`);
+    invoiceQrInstance = new QRCode(dom.invoiceQrcode, {
+      text: invUpiUri,
+      width: 90,
+      height: 90,
+      colorDark: '#0f172a',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+}
+
+function downloadInvoicePdf() {
+  if (!window.html2pdf) {
+    window.print();
+    return;
+  }
+  showToast('Generating Invoice PDF...');
+  const opt = {
+    margin: 10,
+    filename: `${dom.invNumber.value || 'Invoice'}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(dom.invoiceSheet).save();
+}
+
+/* ==========================================================================
+   MODULE: MULTILINGUAL SOFTWARE SOUNDBOX
+   ========================================================================== */
+
+function playCashChime(callback) {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+    osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.2); // D6
+
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+    setTimeout(callback, 500);
+  } catch (e) {
+    callback();
+  }
+}
+
+function triggerSoundboxVoice() {
+  const amt = parseFloat(dom.soundboxAmountInput.value) || 299;
+  const payer = dom.soundboxCustomerInput.value.trim();
+  const lang = dom.soundboxVoiceLang.value;
+
+  dom.soundboxLastAmount.textContent = `₹ ${amt.toFixed(2)}`;
+  dom.soundboxStatusText.textContent = `● Payment Voiced in ${lang}`;
+
+  let phrase = `Received ${amt} rupees on UPI.`;
+  if (lang === 'hi-IN') {
+    phrase = `यूपीआई पर ${amt} रुपये प्राप्त हुए।`;
+  } else if (lang === 'ta-IN') {
+    phrase = `UPI-ல் ${amt} ரூபாய் பெறப்பட்டது.`;
+  } else if (lang === 'te-IN') {
+    phrase = `UPI లో ${amt} రూపాయలు స్వీకరించబడ్డాయి.`;
+  } else if (lang === 'kn-IN') {
+    phrase = `UPI ನಲ್ಲಿ ${amt} ರೂಪಾಯಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ.`;
+  } else if (lang === 'bn-IN') {
+    phrase = `UPI-তে ${amt} টাকা পাওয়া গেছে.`;
+  } else if (lang === 'mr-IN') {
+    phrase = `UPI वर ${amt} रुपये प्राप्त झाले.`;
+  } else if (lang === 'gu-IN') {
+    phrase = `UPI પર ${amt} રૂપિયા મળ્યા.`;
+  }
+
+  if (payer) phrase = `${phrase} Thank you ${payer}.`;
+
+  const speakAction = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(phrase);
+      utter.lang = lang;
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      window.speechSynthesis.speak(utter);
+    } else {
+      showToast('Web Speech API not supported on this browser.');
+    }
+
+    // Append to Broadcast Log
+    const now = new Date().toLocaleTimeString();
+    const logItem = document.createElement('div');
+    logItem.className = 'log-item';
+    logItem.innerHTML = `<span><strong>₹${amt.toFixed(2)}</strong> &bull; ${payer || 'Customer'}</span><span>${now}</span>`;
+    if (dom.soundboxLogList.querySelector('.log-empty')) {
+      dom.soundboxLogList.innerHTML = '';
+    }
+    dom.soundboxLogList.prepend(logItem);
+    showToast(`Voiced: "₹${amt.toFixed(2)}"`);
+  };
+
+  if (dom.soundboxPlayChime.checked) {
+    playCashChime(speakAction);
+  } else {
+    speakAction();
+  }
+}
+
+/* ==========================================================================
+   MODULE: BULK / BATCH GENERATION
+   ========================================================================== */
+
+function processBatchInput() {
+  const text = dom.batchInputArea.value.trim();
+  if (!text) {
+    showToast('Please enter rows in CSV format.');
+    return;
+  }
+
+  const lines = text.split('\n');
+  dom.batchCardsContainer.innerHTML = '';
+  let count = 0;
+
+  lines.forEach((line, idx) => {
+    const parts = line.split(',').map((p) => p.trim());
+    if (parts.length < 2) return;
+
+    const vpa = parts[0];
+    const name = parts[1];
+    const amt = parts[2] || '';
+    const ref = parts[3] || `REF-${idx + 1}`;
+    const note = parts[4] || '';
+
+    count++;
+
+    // Generate UPI URI
+    const params = [`pa=${encodeURIComponent(vpa)}`, `pn=${encodeURIComponent(name)}`];
+    if (amt && !isNaN(amt)) {
+      params.push(`am=${encodeURIComponent(parseFloat(amt).toFixed(2))}`);
+      params.push('cu=INR');
+    }
+    if (ref) params.push(`tr=${encodeURIComponent(ref)}`);
+    if (note) params.push(`tn=${encodeURIComponent(note)}`);
+    const uri = `upi://pay?${params.join('&')}`;
+
+    // Create Mini Standee Card
+    const card = document.createElement('div');
+    card.className = 'batch-mini-card';
+    const qrId = `batch-qr-${idx}`;
+    card.innerHTML = `
+      <h5>${escapeHtml(name)}</h5>
+      <p>${escapeHtml(vpa)}</p>
+      <div id="${qrId}" class="mini-qr-box"></div>
+      <strong>${amt ? `₹${parseFloat(amt).toFixed(2)}` : 'Scan to Pay'}</strong>
+    `;
+    dom.batchCardsContainer.appendChild(card);
+
+    // Render QR
+    setTimeout(() => {
+      new QRCode(document.getElementById(qrId), {
+        text: uri,
+        width: 140,
+        height: 140,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }, 10);
+  });
+
+  dom.batchCountBadge.textContent = count;
+  showToast(`Generated ${count} Batch UPI QR Codes!`);
+}
+
+function loadBatchSample() {
+  dom.batchInputArea.value = `merchant@okaxis, Main Counter, 250.00, TBL-01, Table 1
+store@okhdfcbank, Downtown Stall, 150.00, TBL-02, Table 2
+rider1@ybl, Express Delivery, 499.00, ORD-881, Food Delivery
+store@paytm, Cashier Desk 3, 99.00, TBL-03, Snack Bar`;
+  processBatchInput();
+}
+
+/* ==========================================================================
+   MODULE: DEEP LINK PARSER & VERIFIER
+   ========================================================================== */
+
+function executeParse() {
+  const raw = dom.parserInputText.value.trim();
+  if (!raw.startsWith('upi://pay?')) {
+    dom.parserVerdictBadge.className = 'verdict-badge invalid';
+    dom.parserVerdictBadge.textContent = '❌ Invalid Scheme: Must start with upi://pay?';
+    dom.parserReportTable.innerHTML = '';
+    return;
+  }
+
+  const queryStr = raw.replace('upi://pay?', '');
+  const urlParams = new URLSearchParams(queryStr);
+
+  const pa = urlParams.get('pa');
+  const pn = urlParams.get('pn');
+  const am = urlParams.get('am');
+  const cu = urlParams.get('cu');
+  const tr = urlParams.get('tr');
+  const tn = urlParams.get('tn');
+  const mc = urlParams.get('mc');
+  const mam = urlParams.get('mam');
+  const mode = urlParams.get('mode');
+  const sign = urlParams.get('sign');
+
+  const rows = [
+    {
+      k: 'pa',
+      meaning: 'Payee VPA Address',
+      val: pa,
+      status: pa && pa.includes('@') ? '✔ Compliant VPA' : '❌ Required (@ handle missing)'
+    },
+    {
+      k: 'pn',
+      meaning: 'Payee Name',
+      val: pn,
+      status: pn ? '✔ Compliant' : '⚠ Missing (Highly Recommended)'
+    },
+    {
+      k: 'am',
+      meaning: 'Amount',
+      val: am,
+      status: am ? (!isNaN(am) && parseFloat(am) > 0 ? '✔ Valid Amount' : '❌ Non-numeric') : '— Manual entry'
+    },
+    {
+      k: 'cu',
+      meaning: 'Currency Code',
+      val: cu,
+      status: am ? (cu === 'INR' ? '✔ Compliant (INR)' : '❌ Must be INR when am is present') : '—'
+    },
+    {
+      k: 'tr',
+      meaning: 'Transaction Reference',
+      val: tr,
+      status: tr ? '✔ Present' : '— Optional for P2P'
+    },
+    {
+      k: 'tn',
+      meaning: 'Transaction Note',
+      val: tn,
+      status: tn ? (tn.length <= 50 ? '✔ Max 50 Chars OK' : '❌ Exceeds 50 chars') : '—'
+    },
+    {
+      k: 'mc',
+      meaning: 'Merchant Category Code',
+      val: mc,
+      status: mc ? (mc.length === 4 ? '✔ 4-digit MCC' : '❌ Must be 4 digits') : '—'
+    },
+    {
+      k: 'mam',
+      meaning: 'Minimum Amount (MAM)',
+      val: mam,
+      status: mam ? '✔ Partial Payment Allowed' : '— Strict lock'
+    },
+    {
+      k: 'mode',
+      meaning: 'Initiation Mode',
+      val: mode,
+      status: mode ? `✔ Mode ${mode}` : '— Default (00)'
+    },
+    {
+      k: 'sign',
+      meaning: 'PKI Digital Signature',
+      val: sign ? `${sign.substring(0, 16)}...` : null,
+      status: sign ? '✔ Signed payload' : '— Unsigned'
+    }
   ];
 
-  liveInputs.forEach((elem) => {
-    if (!elem) return;
-    elem.addEventListener('input', refreshAll);
-    elem.addEventListener('change', refreshAll);
+  const hasPa = pa && pa.includes('@');
+  const cuValid = !am || cu === 'INR';
+
+  if (hasPa && cuValid) {
+    dom.parserVerdictBadge.className = 'verdict-badge valid';
+    dom.parserVerdictBadge.textContent = '✔ Fully Valid NPCI Protocol Link';
+  } else {
+    dom.parserVerdictBadge.className = 'verdict-badge invalid';
+    dom.parserVerdictBadge.textContent = '❌ Non-Compliant NPCI Format';
+  }
+
+  dom.parserReportTable.innerHTML = rows.map((r) => `
+    <tr>
+      <td><code>${r.k}</code></td>
+      <td>${r.meaning}</td>
+      <td><strong>${r.val ? escapeHtml(r.val) : '—'}</strong></td>
+      <td>${r.status}</td>
+    </tr>
+  `).join('');
+
+  showToast('Verified NPCI Link Parameters');
+}
+
+/* ==========================================================================
+   NAVIGATION TAB SWITCHING
+   ========================================================================== */
+
+function switchModule(targetTab) {
+  // Update nav tabs
+  document.querySelectorAll('.segment-tab').forEach((t) => {
+    const isTarget = t.getAttribute('data-tab') === targetTab;
+    t.classList.toggle('active', isTarget);
+    t.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+
+  // Dual cockpit tabs (QR, Intent, Button)
+  const isCockpit = ['tab-qr', 'tab-intent', 'tab-button'].includes(targetTab);
+
+  dom.viewPrimary.style.display = isCockpit ? 'grid' : 'none';
+  dom.viewInvoice.style.display = targetTab === 'tab-invoice' ? 'block' : 'none';
+  dom.viewSoundbox.style.display = targetTab === 'tab-soundbox' ? 'block' : 'none';
+  dom.viewBatch.style.display = targetTab === 'tab-batch' ? 'block' : 'none';
+  dom.viewParser.style.display = targetTab === 'tab-parser' ? 'block' : 'none';
+
+  if (isCockpit) {
+    document.querySelectorAll('.tab-content').forEach((c) => {
+      c.classList.toggle('active', c.id === targetTab);
+    });
+  }
+
+  if (targetTab === 'tab-invoice') updateInvoicePreview();
+}
+
+/* ==========================================================================
+   SHARE URL STATE
+   ========================================================================== */
+
+function shareCurrentConfig() {
+  const params = new URLSearchParams();
+  params.set('user', dom.username.value);
+  params.set('handle', dom.handle.value);
+  params.set('name', dom.payeeName.value);
+  params.set('am', dom.amount.value);
+  params.set('tr', dom.txRef.value);
+  params.set('tn', dom.txNote.value);
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}#${params.toString()}`;
+  copyToClipboard(shareUrl, 'Sharable Studio Link copied!');
+}
+
+function restoreFromHash() {
+  if (!window.location.hash) return;
+  try {
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    if (params.get('user')) dom.username.value = params.get('user');
+    if (params.get('handle')) dom.handle.value = params.get('handle');
+    if (params.get('name')) dom.payeeName.value = params.get('name');
+    if (params.get('am')) dom.amount.value = params.get('am');
+    if (params.get('tr')) dom.txRef.value = params.get('tr');
+    if (params.get('tn')) dom.txNote.value = params.get('tn');
+  } catch (e) {}
+}
+
+/* ==========================================================================
+   EVENT ATTACHMENTS
+   ========================================================================== */
+
+function bindAllEvents() {
+  // Live Cockpit Listeners
+  const liveInputs = [
+    dom.username, dom.handle, dom.payeeName, dom.amount, dom.txRef, dom.txNote,
+    dom.mcc, dom.minAmount, dom.mode, dom.url, dom.sign, dom.standeeTheme,
+    dom.qrDark, dom.qrLight, dom.qrCenterLogo, dom.qrEccLevel, dom.qrSize,
+    dom.qrQuietZone, dom.btnThemePreset, dom.btnTextCustom, dom.btnShowAmount, dom.btnShowIcons
+  ];
+
+  liveInputs.forEach((el) => {
+    if (!el) return;
+    el.addEventListener('input', refreshAll);
+    el.addEventListener('change', refreshAll);
   });
 
   // Handle Quick Chips
   document.querySelectorAll('.handle-chip').forEach((chip) => {
     chip.addEventListener('click', (e) => {
-      const handle = e.target.getAttribute('data-handle');
-      if (handle) {
-        dom.handle.value = handle;
-        refreshAll();
-      }
+      dom.handle.value = e.target.getAttribute('data-handle');
+      refreshAll();
     });
   });
 
-  // Auto Generate Ref
+  // Quick Amount Chips
+  document.querySelectorAll('.amt-chip').forEach((chip) => {
+    chip.addEventListener('click', (e) => {
+      dom.amount.value = e.target.getAttribute('data-amt');
+      refreshAll();
+    });
+  });
+
+  // Generate Reference Button
   dom.btnGenRef.addEventListener('click', () => {
     dom.txRef.value = generateOrderId();
     refreshAll();
     showToast('Generated fresh Order Ref!');
   });
 
-  // Downloads & Print
+  // Standee Download Actions
   dom.btnDownloadPNG.addEventListener('click', downloadStandeeCardPng);
+  dom.btnDownloadSVG.addEventListener('click', downloadStandeeSvg);
   dom.btnDownloadQROnly.addEventListener('click', downloadRawQrOnly);
   dom.btnPrintQR.addEventListener('click', () => window.print());
-
-  // Segment Tab Navigation
-  document.querySelectorAll('.segment-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.segment-tab').forEach((t) => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      document.querySelectorAll('.tab-content').forEach((c) => c.classList.remove('active'));
-
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      const targetId = tab.getAttribute('data-tab');
-      const panel = document.getElementById(targetId);
-      if (panel) panel.classList.add('active');
-    });
-  });
 
   // Copy Buttons
   dom.btnCopyUri.addEventListener('click', () => copyToClipboard(dom.intentUriCode.textContent, 'UPI URI copied!'));
   dom.btnCopyHtml.addEventListener('click', () => copyToClipboard(dom.htmlSnippetCode.textContent, 'Button HTML copied!'));
   dom.btnCopyUniversalScript.addEventListener('click', () => copyToClipboard(dom.jsUniversalSnippetCode.textContent, 'Universal Script copied!'));
+
+  // Quick Share Actions (WhatsApp, SMS)
+  dom.btnShareWhatsApp.addEventListener('click', () => {
+    const uri = buildUpiUri('upi');
+    const msg = encodeURIComponent(`Pay ${dom.payeeName.value} via UPI: ${uri}`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  });
+
+  dom.btnShareSMS.addEventListener('click', () => {
+    const uri = buildUpiUri('upi');
+    window.open(`sms:?body=${encodeURIComponent(`Pay ${dom.payeeName.value} via UPI: ${uri}`)}`, '_blank');
+  });
+
+  dom.btnCopyShortLink.addEventListener('click', shareCurrentConfig);
+  dom.btnQuickShare.addEventListener('click', shareCurrentConfig);
+
+  // Tab Navigation Switching
+  document.querySelectorAll('.segment-tab').forEach((tab) => {
+    tab.addEventListener('click', () => switchModule(tab.getAttribute('data-tab')));
+  });
 
   // Theme Toggle
   dom.themeToggle.addEventListener('click', () => {
@@ -755,10 +1343,75 @@ function bindEvents() {
   if (localStorage.getItem('theme') === 'light') {
     document.body.setAttribute('data-theme', 'light');
   }
+
+  // Invoice Events
+  const invInputs = [
+    dom.invNumber, dom.invDate, dom.invDueDate, dom.invSellerName,
+    dom.invSellerGST, dom.invClientName, dom.invClientGST, dom.invNotes
+  ];
+  invInputs.forEach((el) => {
+    if (!el) return;
+    el.addEventListener('input', updateInvoicePreview);
+  });
+
+  dom.btnAddLineItem.addEventListener('click', () => {
+    state.invoiceItems.push({ desc: 'Additional Consulting Services', qty: 1, rate: 1000, gst: 18 });
+    renderInvoiceItemsInput();
+    updateInvoicePreview();
+  });
+
+  dom.lineItemsBody.addEventListener('input', (e) => {
+    const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+    if (isNaN(idx) || !state.invoiceItems[idx]) return;
+
+    if (e.target.classList.contains('item-desc')) state.invoiceItems[idx].desc = e.target.value;
+    if (e.target.classList.contains('item-qty')) state.invoiceItems[idx].qty = parseFloat(e.target.value) || 0;
+    if (e.target.classList.contains('item-rate')) state.invoiceItems[idx].rate = parseFloat(e.target.value) || 0;
+    if (e.target.classList.contains('item-gst')) state.invoiceItems[idx].gst = parseFloat(e.target.value) || 0;
+
+    renderInvoiceItemsInput();
+    updateInvoicePreview();
+  });
+
+  dom.lineItemsBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-delete-row')) {
+      const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+      state.invoiceItems.splice(idx, 1);
+      renderInvoiceItemsInput();
+      updateInvoicePreview();
+    }
+  });
+
+  dom.btnResetInvoice.addEventListener('click', () => {
+    state.invoiceItems = [{ desc: 'General Services', qty: 1, rate: 500, gst: 18 }];
+    renderInvoiceItemsInput();
+    updateInvoicePreview();
+  });
+
+  dom.btnDownloadInvoicePDF.addEventListener('click', downloadInvoicePdf);
+  dom.btnPrintInvoice.addEventListener('click', () => window.print());
+
+  // Soundbox Events
+  dom.btnTestSoundboxVoice.addEventListener('click', triggerSoundboxVoice);
+  dom.btnClearSoundboxLog.addEventListener('click', () => {
+    dom.soundboxLogList.innerHTML = '<div class="log-empty">History cleared.</div>';
+  });
+
+  // Batch Events
+  dom.btnProcessBatch.addEventListener('click', processBatchInput);
+  dom.btnLoadBatchSample.addEventListener('click', loadBatchSample);
+  dom.btnBatchPrintAll.addEventListener('click', () => window.print());
+
+  // Parser Events
+  dom.btnExecuteParse.addEventListener('click', executeParse);
 }
 
-// Initialization
+// Initial Boot
 document.addEventListener('DOMContentLoaded', () => {
-  bindEvents();
+  restoreFromHash();
+  initInvoiceDates();
+  renderInvoiceItemsInput();
+  bindAllEvents();
   refreshAll();
+  executeParse();
 });
